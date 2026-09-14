@@ -1,0 +1,137 @@
+const {
+  SlashCommandBuilder,
+  EmbedBuilder,
+  ActionRowBuilder,
+  ButtonBuilder,
+  ButtonStyle
+} = require('discord.js');
+const { generateRoomId, buildPushUrl, buildViewUrl } = require('../utils/vdoBuilder');
+const streamStore = require('../utils/streamStore');
+
+module.exports = {
+  data: new SlashCommandBuilder()
+    .setName('stream')
+    .setDescription('Inicia uma transmissão de tela P2P em 1080p 60fps via VDO.ninja'),
+
+  /**
+   * Execução do comando /stream
+   * @param {import('discord.js').ChatInputCommandInteraction} interaction
+   */
+  async execute(interaction) {
+    // 1. Validação: Usuário deve estar conectado a um canal de voz
+    const voiceChannel = interaction.member?.voice?.channel;
+    if (!voiceChannel) {
+      return interaction.reply({
+        content: '❌ **Você precisa estar conectado a um canal de voz** para iniciar uma transmissão de tela!',
+        ephemeral: true
+      });
+    }
+
+    // 2. Geração do ID único e URLs otimizadas
+    const roomId = generateRoomId();
+    const pushUrl = buildPushUrl(roomId);
+    const viewUrl = buildViewUrl(roomId);
+
+    // 3. Criação do Embed Público para o canal de voz/texto
+    const publicEmbed = new EmbedBuilder()
+      .setColor(0x5865F2) // Discord Blurple
+      .setTitle('📺 Transmissão de Tela Iniciada')
+      .setDescription(`<@${interaction.user.id}> iniciou um compartilhamento de tela no canal **${voiceChannel.name}**.`)
+      .addFields(
+        {
+          name: '🖥️ Qualidade',
+          value: '`1080p @ 60 FPS (9.000 kbps)`',
+          inline: true
+        },
+        {
+          name: '⚡ Protocolo',
+          value: '`WebRTC P2P (~100ms latência)`',
+          inline: true
+        }
+      )
+      .setFooter({
+        text: '💡 Dica: Para fixar a tela por cima do Discord, use o botão de Picture-in-Picture no player.'
+      })
+      .setTimestamp();
+
+    // 4. Botões Públicos (Assistir + Dica PiP)
+    const publicRow = new ActionRowBuilder().addComponents(
+      new ButtonBuilder()
+        .setLabel('👁️ Assistir Transmissão (PiP)')
+        .setStyle(ButtonStyle.Link)
+        .setURL(viewUrl),
+      new ButtonBuilder()
+        .setCustomId('pip_tip')
+        .setLabel('❓ Dica do Picture-in-Picture')
+        .setStyle(ButtonStyle.Secondary)
+    );
+
+    // 5. Envio da Mensagem Pública no chat do canal
+    const publicMessage = await interaction.reply({
+      embeds: [publicEmbed],
+      components: [publicRow],
+      fetchReply: true
+    });
+
+    // 6. Embed e Botões Privados (Efêmeros) para o Transmissor
+    const streamerEmbed = new EmbedBuilder()
+      .setColor(0x2ECC71) // Verde esmeralda
+      .setTitle('🎮 Painel do Transmissor (Privado)')
+      .setDescription([
+        'Sua sala de transmissão foi gerada! Escolha abaixo como prefere transmitir:',
+        '',
+        '### 🚀 Opção 1: Game Capture App *(Recomendado para Jogos)*',
+        'Captura o áudio isolado do jogo (sem eco da chamada) e usa aceleração da GPU (NVENC/AMD 60 FPS lisos).',
+        '',
+        '**Dados para colar no app:**',
+        '• **Stream / URL:**',
+        '```text',
+        roomId,
+        '```',
+        '• **Password:** Deixe **em branco** (ou vazio)',
+        '',
+        '*Passo a passo no app:*',
+        '1. Clique em **SELECT A SOURCE** e escolha a janela do jogo.',
+        '2. No campo **Stream / URL**, copie e cole o código acima.',
+        '3. Deixe **Password** vazio e clique para iniciar!',
+        '',
+        '---',
+        '### 🌐 Opção 2: Pelo Navegador *(Sem Baixar Nada)*',
+        'Clique no botão **"Iniciar no Navegador"** abaixo.',
+        '*(Dica: Escolha "Tela Inteira" e marque "Compartilhar áudio do sistema")*'
+      ].join('\n'))
+      .setFooter({
+        text: '🔒 Segredo: Não compartilhe esta mensagem. Use /endstream para encerrar a sala.'
+      });
+
+    const streamerRow = new ActionRowBuilder().addComponents(
+      new ButtonBuilder()
+        .setLabel('🌐 Iniciar no Navegador (1080p60)')
+        .setStyle(ButtonStyle.Link)
+        .setURL(pushUrl),
+      new ButtonBuilder()
+        .setLabel('📥 Baixar Game Capture App')
+        .setStyle(ButtonStyle.Link)
+        .setURL('https://vdo.ninja/gamecapture')
+    );
+
+    await interaction.followUp({
+      embeds: [streamerEmbed],
+      components: [streamerRow],
+      ephemeral: true
+    });
+
+    // 7. Salva a stream ativa no gerenciador
+    streamStore.setStream(interaction.user.id, {
+      roomId,
+      channelId: interaction.channelId,
+      messageId: publicMessage.id,
+      voiceChannelId: voiceChannel.id,
+      voiceChannelName: voiceChannel.name,
+      pushUrl,
+      viewUrl,
+      streamerId: interaction.user.id,
+      startedAt: new Date()
+    });
+  }
+};

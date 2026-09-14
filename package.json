@@ -1,0 +1,28 @@
+{
+  "name": "discord-vdoninja-bot",
+  "version": "1.0.0",
+  "description": "Bot do Discord integrado ao VDO.ninja para Go Live alternativo em 1080p 60fps",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "node --watch src/index.js",
+    "test": "node test/vdoBuilder.test.js"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "keywords": [
+    "discord",
+    "vdoninja",
+    "webrtc",
+    "screenshare",
+    "golive",
+    "discord-bot"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "discord.js": "^14.17.3",
+    "dotenv": "^16.4.7"
+  }
+}
