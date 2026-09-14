@@ -23,12 +23,11 @@ assert.strictEqual(pushUrlObj.searchParams.has('screenshare'), true);
 assert.strictEqual(pushUrlObj.searchParams.has('webcam'), false);
 assert.strictEqual(pushUrlObj.searchParams.get('quality'), '0');
 assert.strictEqual(pushUrlObj.searchParams.get('fps'), '60');
-assert.strictEqual(pushUrlObj.searchParams.get('scale'), '1080');
 assert.strictEqual(pushUrlObj.searchParams.get('bitrate'), '9000');
-assert.strictEqual(pushUrlObj.searchParams.get('codec'), 'h264');
-assert.strictEqual(pushUrlObj.searchParams.get('broadcast'), '1');
+assert.strictEqual(pushUrlObj.searchParams.get('prefervideocodec'), 'h264,vp8');
+assert.strictEqual(pushUrlObj.searchParams.get('screensharecontenthint'), 'motion');
+assert.strictEqual(pushUrlObj.searchParams.get('proaudio'), '1');
 assert.strictEqual(pushUrlObj.searchParams.get('autostart'), '1');
-assert.strictEqual(pushUrlObj.searchParams.get('cleanoutput'), '1');
 console.log('   [OK] Push URL validada com sucesso!');
 
 // 3. Validacao dos Parametros do Espectador
@@ -38,10 +37,14 @@ const viewUrlObj = new URL(viewUrl);
 
 assert.strictEqual(viewUrlObj.origin, 'https://vdo.ninja');
 assert.strictEqual(viewUrlObj.searchParams.get('view'), r1);
-assert.strictEqual(viewUrlObj.searchParams.get('cleanoutput'), '1');
-assert.strictEqual(viewUrlObj.searchParams.get('pip'), '1');
-assert.strictEqual(viewUrlObj.searchParams.get('scale'), '1080');
-assert.strictEqual(viewUrlObj.searchParams.get('transparent'), '1');
+assert.strictEqual(viewUrlObj.searchParams.get('darkmode'), '1');
+assert.strictEqual(viewUrlObj.searchParams.get('holdercolor'), '000000');
+assert.strictEqual(viewUrlObj.searchParams.get('videocontrols'), '1');
+assert.strictEqual(viewUrlObj.searchParams.get('codec'), 'h264,vp8');
+assert.strictEqual(viewUrlObj.searchParams.get('scale'), '100');
+assert.strictEqual(viewUrlObj.searchParams.get('autoplay'), '1');
+assert.strictEqual(viewUrlObj.searchParams.has('transparent'), false);
+assert.strictEqual(viewUrlObj.searchParams.has('cleanoutput'), false);
 console.log('   [OK] Ciclo de vida do View URL validado com sucesso!');
 
 // 4. Validacao do Gerenciador em Memoria

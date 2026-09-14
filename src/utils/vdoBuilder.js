@@ -28,21 +28,27 @@ function buildPushUrl(roomId) {
     'screenshare',
     'quality=0',
     'fps=60',
-    'scale=1080',
     'bitrate=9000',
-    'codec=h264',
-    'contenthint=motion',
+    'prefervideocodec=h264,vp8',
+    'screensharecontenthint=motion',
     'proaudio=1',
-    'broadcast=1',
-    'autostart=1',
-    'cleanoutput=1'
+    'autostart=1'
   ];
 
   return `${baseUrl}?${params.join('&')}`;
 }
 
 /**
- * Constroi a URL do Espectador (View) com parametros otimizados para PiP e visual limpo.
+ * Constroi a URL do Espectador (View) com parametros confiaveis para mobile e desktop.
+ *
+ * CORRECOES IMPORTANTES (VDO.NINJA):
+ * - Removido "transparent=1": em navegadores normais/mobile torna o fundo branco (#FFFFFF).
+ * - Removido "cleanoutput=1": ocultava o spinner de carregamento e o botao "Tap to Play" no mobile.
+ * - Adicionado "darkmode=1" e "holdercolor=000000": garante fundo escuro moderno.
+ * - Adicionado "videocontrols=1": exibe controles nativos, volume e botao PiP.
+ * - Corrigido "scale=100": a escala e uma porcentagem (0-100), scale=1080 era invalido.
+ * - Adicionado "codec=h264,vp8": prioriza H264 com fallback automatico para VP8 no Android.
+ *
  * @param {string} roomId Identificador da sala
  * @returns {string} URL de visualizacao do VDO.ninja
  */
@@ -50,10 +56,12 @@ function buildViewUrl(roomId) {
   const baseUrl = 'https://vdo.ninja/';
   const params = [
     `view=${encodeURIComponent(roomId)}`,
-    'cleanoutput=1',
-    'pip=1',
-    'scale=1080',
-    'transparent=1'
+    'darkmode=1',
+    'holdercolor=000000',
+    'videocontrols=1',
+    'codec=h264,vp8',
+    'scale=100',
+    'autoplay=1'
   ];
 
   return `${baseUrl}?${params.join('&')}`;
