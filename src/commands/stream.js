@@ -134,7 +134,28 @@ module.exports = {
       flags: MessageFlags.Ephemeral
     });
 
-    // 7. Salva a stream ativa no gerenciador
+    // 7. Atualização do Apelido do Transmissor (ex: "Nome | 🔴 LIVE")
+    const suffix = ' | 🔴 LIVE';
+    const member = interaction.member;
+    const originalNickname = member?.nickname ?? null;
+    let changedNickname = false;
+
+    if (member && member.manageable) {
+      try {
+        const maxBaseLength = 32 - suffix.length;
+        const cleanBaseName = member.displayName.replace(/\s*\|\s*🔴\s*LIVE$/i, '');
+        const baseName = cleanBaseName.slice(0, maxBaseLength).trim();
+        await member.setNickname(`${baseName}${suffix}`);
+        changedNickname = true;
+        console.log(`[Nickname] Apelido de ${interaction.user.tag} alterado para "${baseName}${suffix}".`);
+      } catch (error) {
+        console.warn(`[Nickname] Não foi possível alterar o apelido de ${interaction.user.tag}:`, error.message);
+      }
+    } else {
+      console.log(`[Nickname] Usuário ${interaction.user.tag} não é gerenciável pelo bot (dono do servidor ou cargo superior).`);
+    }
+
+    // 8. Salva a stream ativa no gerenciador
     streamStore.setStream(interaction.user.id, {
       roomId,
       channelId: interaction.channelId,
@@ -144,6 +165,9 @@ module.exports = {
       pushUrl,
       viewUrl,
       streamerId: interaction.user.id,
+      guildId: interaction.guildId,
+      originalNickname,
+      changedNickname,
       startedAt: new Date()
     });
   }

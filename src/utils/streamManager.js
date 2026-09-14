@@ -70,6 +70,22 @@ async function endStreamSession(client, userId, options = {}) {
     console.warn(`[StreamManager] Não foi possível atualizar a mensagem pública da stream de ${userId}:`, error.message);
   }
 
+  // Restaura o apelido original do membro, caso tenha sido alterado
+  if (activeStream.guildId && activeStream.changedNickname) {
+    try {
+      const guild = await client.guilds.fetch(activeStream.guildId).catch(() => null);
+      if (guild) {
+        const member = await guild.members.fetch(userId).catch(() => null);
+        if (member && member.manageable) {
+          await member.setNickname(activeStream.originalNickname ?? null);
+          console.log(`[Nickname] Apelido de ${member.user?.tag || userId} restaurado.`);
+        }
+      }
+    } catch (error) {
+      console.warn(`[Nickname] Não foi possível restaurar apelido do usuário ${userId}:`, error.message);
+    }
+  }
+
   return { success: true, activeStream };
 }
 

@@ -77,7 +77,7 @@ const eventsPath = path.join(__dirname, 'events');
   }
 }
 
-// 5. Tratamento de Erros Globais
+// 5. Tratamento de Erros Globais e Desligamento Gracioso
 process.on('unhandledRejection', error => {
   console.error('Unhandled Promise Rejection:', error);
 });
@@ -85,6 +85,24 @@ process.on('unhandledRejection', error => {
 process.on('uncaughtException', error => {
   console.error('Uncaught Exception:', error);
 });
+
+const gracefulShutdown = async () => {
+  console.log('\n[Bot] Desligamento solicitado. Encerrando streams ativas e restaurando apelidos...');
+  try {
+    const { endStreamSession } = require('./utils/streamManager');
+    const streamStore = require('./utils/streamStore');
+    const activeUserIds = Array.from(streamStore.getAllStreams().keys());
+    for (const userId of activeUserIds) {
+      await endStreamSession(client, userId, { reason: 'manual' }).catch(() => null);
+    }
+  } catch (err) {
+    console.error('Erro durante desligamento gracioso:', err.message);
+  }
+  process.exit(0);
+};
+
+process.on('SIGINT', gracefulShutdown);
+process.on('SIGTERM', gracefulShutdown);
 
 // 6. Conexao com o Discord Gateway
 client.login(process.env.DISCORD_TOKEN).catch(error => {
