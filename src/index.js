@@ -18,7 +18,7 @@ if (!process.env.DISCORD_TOKEN) {
   process.exit(1);
 }
 
-// 2. Inicializacao do Client Discord com otimizacao extrema para 100MB RAM
+// 2. Inicializacao do Client Discord com otimizacao de memoria para 24/7
 const client = new Client({
   intents: [
     GatewayIntentBits.Guilds,
