@@ -1,5 +1,37 @@
-const { EmbedBuilder } = require('discord.js');
+const { EmbedBuilder, PermissionFlagsBits } = require('discord.js');
 const streamStore = require('./streamStore');
+
+/**
+ * Verifica com segurança se o bot tem permissão e hierarquia para alterar o apelido de um membro.
+ * Evita o erro DiscordjsError [GuildUncachedMe] resolvendo o bot (`guild.members.me`) de forma resiliente.
+ *
+ * @param {import('discord.js').Guild} guild
+ * @param {import('discord.js').GuildMember} member
+ * @returns {Promise<boolean>}
+ */
+async function canManageMember(guild, member) {
+  if (!guild || !member) return false;
+  if (member.id === guild.ownerId) return false;
+  if (member.id === guild.client.user?.id) return false;
+
+  try {
+    const me = guild.members.me || await guild.members.fetchMe().catch(() => null);
+    if (!me) return false;
+
+    const hasPermission = me.permissions.has(PermissionFlagsBits.ManageNicknames);
+    if (!hasPermission) return false;
+
+    // O cargo mais alto do bot deve estar acima do cargo mais alto do membro
+    const botHighestRole = me.roles?.highest;
+    const memberHighestRole = member.roles?.highest;
+    if (!botHighestRole || !memberHighestRole) return false;
+
+    return botHighestRole.comparePositionTo(memberHighestRole) > 0;
+  } catch (err) {
+    console.warn('[Nickname] Aviso ao verificar permissões de gerenciamento do membro:', err.message);
+    return false;
+  }
+}
 
 /**
  * Encerra uma transmissão ativa, atualizando a mensagem pública no Discord
@@ -76,7 +108,8 @@ async function endStreamSession(client, userId, options = {}) {
       const guild = await client.guilds.fetch(activeStream.guildId).catch(() => null);
       if (guild) {
         const member = await guild.members.fetch(userId).catch(() => null);
-        if (member && member.manageable) {
+        const isManageable = await canManageMember(guild, member);
+        if (member && isManageable) {
           await member.setNickname(activeStream.originalNickname ?? null);
           console.log(`[Nickname] Apelido de ${member.user?.tag || userId} restaurado.`);
         }
@@ -90,5 +123,6 @@ async function endStreamSession(client, userId, options = {}) {
 }
 
 module.exports = {
+  canManageMember,
   endStreamSession
 };

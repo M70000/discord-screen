@@ -29,7 +29,6 @@ const client = new Client({
     UserManager: 0,
     PresenceManager: 0,
     ReactionManager: 0,
-    GuildMemberManager: 0,
     ThreadManager: 0,
     GuildScheduledEventManager: 0,
     AutoModerationRuleManager: 0,

@@ -8,7 +8,7 @@ const {
 } = require('discord.js');
 const { generateRoomId, buildPushUrl, buildViewUrl } = require('../utils/vdoBuilder');
 const streamStore = require('../utils/streamStore');
-const { endStreamSession } = require('../utils/streamManager');
+const { endStreamSession, canManageMember } = require('../utils/streamManager');
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -140,7 +140,8 @@ module.exports = {
     const originalNickname = member?.nickname ?? null;
     let changedNickname = false;
 
-    if (member && member.manageable) {
+    const isManageable = await canManageMember(interaction.guild, member);
+    if (member && isManageable) {
       try {
         const maxBaseLength = 32 - suffix.length;
         const cleanBaseName = member.displayName.replace(/\s*\|\s*🔴\s*LIVE$/i, '');
@@ -152,7 +153,7 @@ module.exports = {
         console.warn(`[Nickname] Não foi possível alterar o apelido de ${interaction.user.tag}:`, error.message);
       }
     } else {
-      console.log(`[Nickname] Usuário ${interaction.user.tag} não é gerenciável pelo bot (dono do servidor ou cargo superior).`);
+      console.log(`[Nickname] Usuário ${interaction.user.tag} não é gerenciável pelo bot (dono do servidor, cargo superior ou permissão ausente).`);
     }
 
     // 8. Salva a stream ativa no gerenciador
