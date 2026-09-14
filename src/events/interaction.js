@@ -1,6 +1,7 @@
 const {
   EmbedBuilder,
-  Events
+  Events,
+  MessageFlags
 } = require('discord.js');
 
 
@@ -21,7 +22,7 @@ module.exports = {
         console.error(`Comando nao encontrado: ${interaction.commandName}`);
         return interaction.reply({
           content: '❏ Este comando nao foi reconhecido pelo bot.',
-          ephemeral: true
+          flags: MessageFlags.Ephemeral
         });
       }
 
@@ -33,7 +34,7 @@ module.exports = {
 
         const errorMessage = {
           content: '❏ Ocorreu um erro interno ao processar este comando.',
-          ephemeral: true
+          flags: MessageFlags.Ephemeral
         };
 
         if (interaction.replied || interaction.deferred) {
@@ -84,7 +85,7 @@ module.exports = {
 
         return interaction.reply({
           embeds: [tipEmbed],
-          ephemeral: true
+          flags: MessageFlags.Ephemeral
         });
       }
     }

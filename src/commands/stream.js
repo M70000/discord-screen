@@ -3,7 +3,8 @@ const {
   EmbedBuilder,
   ActionRowBuilder,
   ButtonBuilder,
-  ButtonStyle
+  ButtonStyle,
+  MessageFlags
 } = require('discord.js');
 const { generateRoomId, buildPushUrl, buildViewUrl } = require('../utils/vdoBuilder');
 const streamStore = require('../utils/streamStore');
@@ -23,7 +24,7 @@ module.exports = {
     if (!voiceChannel) {
       return interaction.reply({
         content: '❌ **Você precisa estar conectado a um canal de voz** para iniciar uma transmissão de tela!',
-        ephemeral: true
+        flags: MessageFlags.Ephemeral
       });
     }
 
@@ -67,11 +68,12 @@ module.exports = {
     );
 
     // 5. Envio da Mensagem Pública no chat do canal
-    const publicMessage = await interaction.reply({
+    const response = await interaction.reply({
       embeds: [publicEmbed],
       components: [publicRow],
-      fetchReply: true
+      withResponse: true
     });
+    const publicMessage = response.resource?.message ?? (await interaction.fetchReply());
 
     // 6. Embed e Botões Privados (Efêmeros) para o Transmissor
     const streamerEmbed = new EmbedBuilder()
@@ -118,7 +120,7 @@ module.exports = {
     await interaction.followUp({
       embeds: [streamerEmbed],
       components: [streamerRow],
-      ephemeral: true
+      flags: MessageFlags.Ephemeral
     });
 
     // 7. Salva a stream ativa no gerenciador

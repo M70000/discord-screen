@@ -1,6 +1,7 @@
 const {
   SlashCommandBuilder,
-  EmbedBuilder
+  EmbedBuilder,
+  MessageFlags
 } = require('discord.js');
 const streamStore = require('../utils/streamStore');
 
@@ -20,7 +21,7 @@ module.exports = {
     if (!activeStream) {
       return interaction.reply({
         content: '⚡︍ **Você não possui nenhuma transmissão ativa** registrada no momento.',
-        ephemeral: true
+        flags: MessageFlags.Ephemeral
       });
     }
 
@@ -71,7 +72,7 @@ module.exports = {
 
     return interaction.reply({
       content: '✅ **Sua transmissão foi encerrada com sucesso.** Os botões de acesso foram desativados.',
-      ephemeral: true
+      flags: MessageFlags.Ephemeral
     });
   }
 };
