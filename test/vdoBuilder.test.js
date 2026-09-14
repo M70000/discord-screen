@@ -45,7 +45,12 @@ assert.strictEqual(viewUrlObj.searchParams.get('scale'), '100');
 assert.strictEqual(viewUrlObj.searchParams.get('autoplay'), '1');
 assert.strictEqual(viewUrlObj.searchParams.has('transparent'), false);
 assert.strictEqual(viewUrlObj.searchParams.has('cleanoutput'), false);
-console.log('   [OK] Ciclo de vida do View URL validado com sucesso!');
+
+const viewProxyUrl = buildViewUrl(r1, { proxy: true });
+const viewProxyUrlObj = new URL(viewProxyUrl);
+assert.strictEqual(viewProxyUrlObj.origin, 'https://proxy.vdo.ninja');
+assert.strictEqual(viewProxyUrlObj.searchParams.has('proxy'), true);
+console.log('   [OK] Ciclo de vida do View URL (Normal e Proxy) validado com sucesso!');
 
 // 4. Validacao do Gerenciador em Memoria
 console.log('\n4. Testando StreamStore...');

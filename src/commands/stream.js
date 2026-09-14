@@ -32,6 +32,7 @@ module.exports = {
     const roomId = generateRoomId();
     const pushUrl = buildPushUrl(roomId);
     const viewUrl = buildViewUrl(roomId);
+    const viewProxyUrl = buildViewUrl(roomId, { proxy: true });
 
     // 3. Criação do Embed Público para o canal de voz/texto
     const publicEmbed = new EmbedBuilder()
@@ -51,19 +52,23 @@ module.exports = {
         }
       )
       .setFooter({
-        text: '💡 Dica: Para fixar a tela por cima do Discord, use o botão de Picture-in-Picture no player.'
+        text: '💡 Dica: Se estiver no 4G/5G ou der aviso de rede, use o botão "Link 4G/5G (Proxy)".'
       })
       .setTimestamp();
 
-    // 4. Botões Públicos (Assistir + Dica PiP)
+    // 4. Botões Públicos (Assistir + Link 4G/5G + Dicas)
     const publicRow = new ActionRowBuilder().addComponents(
       new ButtonBuilder()
         .setLabel('👁️ Assistir Transmissão (PiP)')
         .setStyle(ButtonStyle.Link)
         .setURL(viewUrl),
       new ButtonBuilder()
+        .setLabel('📶 Link 4G/5G (Proxy)')
+        .setStyle(ButtonStyle.Link)
+        .setURL(viewProxyUrl),
+      new ButtonBuilder()
         .setCustomId('pip_tip')
-        .setLabel('❓ Dica do Picture-in-Picture')
+        .setLabel('❓ Dicas & Ajuda')
         .setStyle(ButtonStyle.Secondary)
     );
 

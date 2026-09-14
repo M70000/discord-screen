@@ -78,9 +78,17 @@ module.exports = {
                 '• **Firefox:** Icone azul de PiP flutuante na lateral do player.',
                 '• **Latencia P2P:** A transmissao e ponto a ponto direta via WebRTC, sem servidores de retransmissao (~100ms de latencia).'
               ].join('\n')
+            },
+            {
+              name: '📶 Aviso ou erro no 4G / 5G no Celular?',
+              value: [
+                '• Se no celular aparecer "The system cannot be accessed...", use o botão **"📶 Link 4G/5G (Proxy)"**.',
+                '• Esse modo usa os nós de borda da Cloudflare para contornar bloqueios de WebSockets de operadoras móveis.',
+                '• Lembre-se também de desativar a Economia de Bateria caso esteja limitando dados em segundo plano.'
+              ].join('\n')
             }
           )
-          .setFooter({ text: 'IDO.ninja WebRTC P2P ! 1080p 60fps' });
+          .setFooter({ text: 'VDO.ninja WebRTC P2P • 1080p 60fps' });
 
 
         return interaction.reply({

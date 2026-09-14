@@ -52,8 +52,8 @@ function buildPushUrl(roomId) {
  * @param {string} roomId Identificador da sala
  * @returns {string} URL de visualizacao do VDO.ninja
  */
-function buildViewUrl(roomId) {
-  const baseUrl = 'https://vdo.ninja/';
+function buildViewUrl(roomId, options = {}) {
+  const baseUrl = options.proxy ? 'https://proxy.vdo.ninja/' : 'https://vdo.ninja/';
   const params = [
     `view=${encodeURIComponent(roomId)}`,
     'darkmode=1',
@@ -63,6 +63,10 @@ function buildViewUrl(roomId) {
     'scale=100',
     'autoplay=1'
   ];
+
+  if (options.proxy) {
+    params.push('proxy');
+  }
 
   return `${baseUrl}?${params.join('&')}`;
 }
