@@ -8,6 +8,7 @@ const {
 } = require('discord.js');
 const { generateRoomId, buildPushUrl, buildViewUrl } = require('../utils/vdoBuilder');
 const streamStore = require('../utils/streamStore');
+const { endStreamSession } = require('../utils/streamManager');
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -26,6 +27,11 @@ module.exports = {
         content: '❌ **Você precisa estar conectado a um canal de voz** para iniciar uma transmissão de tela!',
         flags: MessageFlags.Ephemeral
       });
+    }
+
+    // Se o usuário já possuía uma transmissão ativa, encerra a anterior
+    if (streamStore.hasActiveStream(interaction.user.id)) {
+      await endStreamSession(interaction.client, interaction.user.id, { reason: 'superseded' });
     }
 
     // 2. Geração do ID único e URLs otimizadas

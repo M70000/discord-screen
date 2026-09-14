@@ -1,10 +1,8 @@
 const {
   SlashCommandBuilder,
-  EmbedBuilder,
   MessageFlags
 } = require('discord.js');
-const streamStore = require('../utils/streamStore');
-
+const { endStreamSession } = require('../utils/streamManager');
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -16,59 +14,16 @@ module.exports = {
    * @param {import('discord.js').ChatInputCommandInteraction} interaction
    */
   async execute(interaction) {
-    const activeStream = streamStore.getStream(interaction.user.id);
+    const result = await endStreamSession(interaction.client, interaction.user.id, {
+      reason: 'manual'
+    });
 
-    if (!activeStream) {
+    if (!result.success) {
       return interaction.reply({
-        content: '⚡︍ **Você não possui nenhuma transmissão ativa** registrada no momento.',
+        content: '❌ **Você não possui nenhuma transmissão ativa** registrada no momento.',
         flags: MessageFlags.Ephemeral
       });
     }
-
-    // Tenta atualizar a mensagem pública original para indicar que a transmissão foi encerrada
-    try {
-      const channel = await interaction.client.channels.fetch(activeStream.channelId);
-      if (channel) {
-        const publicMessage = await channel.messages.fetch(activeStream.messageId);
-        if (publicMessage) {
-          const startedTimestamp = activeStream.startedAt
-            ? Math.floor(new Date(activeStream.startedAt).getTime() / 1000)
-            : Math.floor(Date.now() / 1000);
-
-          const endedEmbed = new EmbedBuilder()
-            .setColor(0xED4245) // Vermelho Discord
-            .setTitle('🜑  Transmissão de Tela Encerrada')
-            .setDescription(`A transmissão de <@${interaction.user.id}> no canal **[${activeStream.voiceChannelName}]** foi finalizada.`)
-            .addFields(
-              {
-                name: '⍇ Início',
-                value: `<t:${startedTimestamp}:R>`,
-                inline: true
-              },
-              {
-                name: '💪 Status',
-                value: '`Encerrada`',
-                inline: true
-              }
-            )
-            .setFooter({ text: 'Sessão encerrada pelo transmissor.' })
-            .setTimestamp();
-
-          // Atualiza a mensagem removendo os botões interativos
-          await publicMessage.edit({
-            embeds: [endedEmbed],
-            components: []
-          });
-        }
-      }
-    } catch (error) {
-      console.warn('Aviso: Não foi possível editar a mensagem pública original da stream:', error.message);
-    }
-
-
-    // Remove do armazenamento
-    streamStore.deleteStream(interaction.user.id);
-
 
     return interaction.reply({
       content: '✅ **Sua transmissão foi encerrada com sucesso.** Os botões de acesso foram desativados.',
