@@ -40,6 +40,38 @@ const client = new Client({
   }
 });
 
+// Diagnostico de conexao ao Gateway
+let lastDebugMessage = 'Nenhuma mensagem de debug ainda';
+let lastGatewayError = null;
+let lastDisconnectInfo = null;
+
+client.on('debug', info => {
+  lastDebugMessage = info;
+  // Apenas loga no console se nao for spam de heartbeat
+  if (!info.includes('heartbeat') && !info.includes('Latency of')) {
+    console.log(`[DJS Debug] ${info}`);
+  }
+});
+
+client.on('error', err => {
+  lastGatewayError = err?.message || String(err);
+  console.error('[DJS Error]', err);
+});
+
+client.on('shardError', (err, shardId) => {
+  lastGatewayError = `Shard ${shardId}: ${err?.message || err}`;
+  console.error(`[DJS Shard ${shardId} Error]`, err);
+});
+
+client.on('shardDisconnect', (event, shardId) => {
+  lastDisconnectInfo = { shardId, code: event?.code, reason: event?.reason };
+  console.warn(`[DJS Shard ${shardId} Disconnect] Code: ${event?.code}, Reason: ${event?.reason}`);
+});
+
+client.on('shardReconnecting', shardId => {
+  console.log(`[DJS Shard ${shardId}] Reconectando ao Gateway...`);
+});
+
 
 // 3. Carregamento Dinamico de Comandos
 client.commands = new Collection();
@@ -117,8 +149,14 @@ const server = http.createServer((req, res) => {
   res.end(JSON.stringify({
     status: 'online',
     bot: client.user ? client.user.tag : 'conectando...',
+    gatewayStatus: client.ws?.status,
     uptimeSeconds: Math.floor(process.uptime()),
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
+    diagnostics: {
+      lastDebug: lastDebugMessage,
+      lastError: lastGatewayError,
+      lastDisconnect: lastDisconnectInfo
+    }
   }));
 });
 

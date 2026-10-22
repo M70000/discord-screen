@@ -29,6 +29,9 @@ module.exports = {
       });
     }
 
+    // Confirma imediatamente o recebimento da interação para evitar "O aplicativo não respondeu" (timeout de 3s)
+    await interaction.deferReply();
+
     // Se o usuário já possuía uma transmissão ativa, encerra a anterior
     if (streamStore.hasActiveStream(interaction.user.id)) {
       await endStreamSession(interaction.client, interaction.user.id, { reason: 'superseded' });
@@ -78,13 +81,11 @@ module.exports = {
         .setStyle(ButtonStyle.Secondary)
     );
 
-    // 5. Envio da Mensagem Pública no chat do canal
-    const response = await interaction.reply({
+    // 5. Envio da Mensagem Pública no chat do canal (editando a resposta diferida)
+    const publicMessage = await interaction.editReply({
       embeds: [publicEmbed],
-      components: [publicRow],
-      withResponse: true
+      components: [publicRow]
     });
-    const publicMessage = response.resource?.message ?? (await interaction.fetchReply());
 
     // 6. Embed e Botões Privados (Efêmeros) para o Transmissor
     const streamerEmbed = new EmbedBuilder()

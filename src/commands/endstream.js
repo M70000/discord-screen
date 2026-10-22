@@ -14,20 +14,20 @@ module.exports = {
    * @param {import('discord.js').ChatInputCommandInteraction} interaction
    */
   async execute(interaction) {
+    await interaction.deferReply({ flags: MessageFlags.Ephemeral });
+
     const result = await endStreamSession(interaction.client, interaction.user.id, {
       reason: 'manual'
     });
 
     if (!result.success) {
-      return interaction.reply({
-        content: '❌ **Você não possui nenhuma transmissão ativa** registrada no momento.',
-        flags: MessageFlags.Ephemeral
+      return interaction.editReply({
+        content: '❌ **Você não possui nenhuma transmissão ativa** registrada no momento.'
       });
     }
 
-    return interaction.reply({
-      content: '✅ **Sua transmissão foi encerrada com sucesso.** Os botões de acesso foram desativados.',
-      flags: MessageFlags.Ephemeral
+    return interaction.editReply({
+      content: '✅ **Sua transmissão foi encerrada com sucesso.** Os botões de acesso foram desativados.'
     });
   }
 };
