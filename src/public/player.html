@@ -1,0 +1,753 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🔴 AO VIVO - Transmissão de Tela</title>
+  <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+  <style>
+    :root {
+      --bg-color: #0e1015;
+      --card-bg: #141720;
+      --card-border: rgba(255, 255, 255, 0.08);
+      --card-border-hover: rgba(255, 255, 255, 0.16);
+      --text-main: #f2f3f5;
+      --text-muted: #949ba4;
+      --accent-discord: #5865f2;
+      --accent-discord-hover: #4752c4;
+      --live-red: #f23f43;
+      --badge-bg: rgba(242, 63, 67, 0.15);
+      --unmute-bg: rgba(240, 178, 50, 0.18);
+      --unmute-border: rgba(240, 178, 50, 0.4);
+      --unmute-text: #f0b232;
+      --btn-bg: #1c202d;
+      --btn-hover: #262b3c;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      min-height: 100vh;
+      min-height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
+    }
+
+    /* Top Header Banner */
+    header {
+      background-color: var(--card-bg);
+      border-bottom: 1px solid var(--card-border);
+      padding: 12px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+      z-index: 10;
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .live-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--badge-bg);
+      color: var(--live-red);
+      border: 1px solid rgba(242, 63, 67, 0.35);
+      font-weight: 700;
+      font-size: 0.82rem;
+      padding: 4px 10px;
+      border-radius: 999px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .live-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background-color: var(--live-red);
+      box-shadow: 0 0 8px var(--live-red);
+      animation: pulse 1.6s infinite ease-in-out;
+    }
+
+    @keyframes pulse {
+      0%, 100% {
+        transform: scale(1);
+        opacity: 1;
+      }
+      50% {
+        transform: scale(1.35);
+        opacity: 0.5;
+      }
+    }
+
+    .title-banner {
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .streamer-pill {
+      background: rgba(255, 255, 255, 0.06);
+      padding: 3px 10px;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      color: #b5bac1;
+      font-weight: 500;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    /* Unmute reminder badge */
+    .unmute-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--unmute-bg);
+      border: 1px solid var(--unmute-border);
+      color: var(--unmute-text);
+      font-size: 0.85rem;
+      font-weight: 600;
+      padding: 5px 12px;
+      border-radius: 20px;
+      cursor: pointer;
+      user-select: none;
+      transition: all 0.2s ease;
+    }
+
+    .unmute-badge:hover {
+      background: rgba(240, 178, 50, 0.28);
+      transform: translateY(-1px);
+    }
+
+    .unmute-badge.active-audio {
+      background: rgba(35, 165, 90, 0.15);
+      border-color: rgba(35, 165, 90, 0.35);
+      color: #23a55a;
+    }
+
+    /* Main Video Area */
+    main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      width: 100%;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    .player-container {
+      width: 100%;
+      position: relative;
+      background: #000;
+      border-radius: 12px;
+      overflow: hidden;
+      aspect-ratio: 16 / 9;
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.7);
+      border: 1px solid var(--card-border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    video {
+      width: 100%;
+      height: 100%;
+      display: block;
+      background: #000;
+      object-fit: contain;
+    }
+
+    /* Overlay banners & status inside player */
+    .overlay-message {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(14, 16, 21, 0.88);
+      backdrop-filter: blur(4px);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 14px;
+      color: var(--text-main);
+      z-index: 5;
+      padding: 24px;
+      text-align: center;
+    }
+
+    .overlay-message.hidden {
+      display: none !important;
+    }
+
+    .spinner {
+      width: 44px;
+      height: 44px;
+      border: 3px solid rgba(255, 255, 255, 0.1);
+      border-top-color: var(--accent-discord);
+      border-radius: 50%;
+      animation: spin 1s infinite linear;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .overlay-title {
+      font-size: 1.15rem;
+      font-weight: 600;
+    }
+
+    .overlay-sub {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      max-width: 420px;
+    }
+
+    /* Floating Unmute Click Banner */
+    .click-unmute-overlay {
+      position: absolute;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(20, 23, 32, 0.92);
+      border: 1px solid var(--unmute-border);
+      color: var(--unmute-text);
+      padding: 8px 18px;
+      border-radius: 30px;
+      font-size: 0.88rem;
+      font-weight: 600;
+      cursor: pointer;
+      z-index: 6;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s ease;
+      animation: bouncePrompt 2s infinite ease-in-out;
+    }
+
+    .click-unmute-overlay:hover {
+      background: rgba(240, 178, 50, 0.25);
+    }
+
+    @keyframes bouncePrompt {
+      0%, 100% { transform: translate(-50%, 0); }
+      50% { transform: translate(-50%, -4px); }
+    }
+
+    /* Action Controls Bar */
+    .controls-bar {
+      width: 100%;
+      margin-top: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+      padding: 10px 14px;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 10px;
+    }
+
+    .controls-left, .controls-right {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      background: var(--btn-bg);
+      color: var(--text-main);
+      border: 1px solid var(--card-border);
+      padding: 8px 16px;
+      font-size: 0.88rem;
+      font-weight: 500;
+      border-radius: 8px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      user-select: none;
+      transition: all 0.2s ease;
+      text-decoration: none;
+    }
+
+    .btn:hover {
+      background: var(--btn-hover);
+      border-color: var(--card-border-hover);
+      transform: translateY(-1px);
+    }
+
+    .btn:active {
+      transform: translateY(0);
+    }
+
+    .btn-primary {
+      background: var(--accent-discord);
+      border-color: var(--accent-discord);
+    }
+
+    .btn-primary:hover {
+      background: var(--accent-discord-hover);
+      border-color: var(--accent-discord-hover);
+    }
+
+    .stream-meta {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .status-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background-color: var(--live-red);
+    }
+
+    /* Toast Notification */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: #1c202d;
+      color: var(--text-main);
+      border: 1px solid var(--card-border);
+      padding: 12px 20px;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      opacity: 0;
+      pointer-events: none;
+      transform: translateY(12px);
+      transition: all 0.25s ease;
+      z-index: 99;
+    }
+
+    .toast.show {
+      opacity: 1;
+      pointer-events: auto;
+      transform: translateY(0);
+    }
+
+    @media (max-width: 680px) {
+      header {
+        padding: 10px 14px;
+      }
+      main {
+        padding: 10px;
+      }
+      .controls-bar {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .controls-left, .controls-right {
+        justify-content: center;
+      }
+      .title-banner {
+        font-size: 0.9rem;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Header Banner -->
+  <header>
+    <div class="header-left">
+      <div class="live-badge">
+        <span class="live-dot"></span>
+        <span>AO VIVO</span>
+      </div>
+      <div class="title-banner">
+        <span>Transmissão de Tela</span>
+        <div class="streamer-pill" id="streamer-pill">
+          <span>👤</span>
+          <span id="streamer-name">Streamer</span>
+        </div>
+      </div>
+    </div>
+    <div class="header-right">
+      <div id="unmute-badge" class="unmute-badge" title="Clique para alternar o áudio">
+        <span id="unmute-badge-icon">🔇</span>
+        <span id="unmute-badge-text">Clique para desmutar áudio</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content / Player Area -->
+  <main>
+    <div class="player-container" id="player-container">
+      <video id="video" playsinline controls autoplay muted></video>
+
+      <!-- Loading / Buffering Overlay -->
+      <div id="loading-overlay" class="overlay-message">
+        <div class="spinner"></div>
+        <div class="overlay-title">Conectando à transmissão...</div>
+        <div class="overlay-sub">Sincronizando sinal de vídeo em baixa latência (LL-HLS)</div>
+      </div>
+
+      <!-- Error / Offline Overlay -->
+      <div id="error-overlay" class="overlay-message hidden">
+        <div style="font-size: 2.5rem;">⚠️</div>
+        <div class="overlay-title" id="error-title">Sinal Interrompido</div>
+        <div class="overlay-sub" id="error-sub">Não foi possível carregar a transmissão. Aguardando novo sinal ou tentativa de reconexão...</div>
+        <div style="display: flex; gap: 10px; margin-top: 8px;">
+          <button class="btn btn-primary" id="btn-reconnect">🔄 Reconectar Agora</button>
+          <a class="btn" href="offline.html" id="btn-offline-link">Ver Status</a>
+        </div>
+      </div>
+
+      <!-- Quick Unmute Floating Prompt over video -->
+      <div id="floating-unmute" class="click-unmute-overlay">
+        <span>🔊</span>
+        <span>Vídeo mutado automaticamente pelo navegador. Clique para ouvir!</span>
+      </div>
+    </div>
+
+    <!-- Actions & Controls Bar -->
+    <div class="controls-bar">
+      <div class="controls-left">
+        <button class="btn" id="btn-toggle-audio">
+          <span id="audio-btn-icon">🔊</span>
+          <span id="audio-btn-label">Desmutar Áudio</span>
+        </button>
+        <button class="btn" id="btn-pip">
+          <span>🖼️</span>
+          <span>Janela Flutuante (PiP)</span>
+        </button>
+        <button class="btn" id="btn-fullscreen">
+          <span>⛶</span>
+          <span>Tela Cheia</span>
+        </button>
+      </div>
+
+      <div class="controls-right">
+        <div class="stream-meta">
+          <span class="status-dot"></span>
+          <span id="protocol-info">Low-Latency HLS</span>
+          <span>•</span>
+          <span id="resolution-info">1080p 60fps</span>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Notification Toast -->
+  <div id="toast" class="toast">
+    <span id="toast-icon">ℹ️</span>
+    <span id="toast-message">Mensagem do sistema</span>
+  </div>
+
+  <script>
+    (function() {
+      const video = document.getElementById('video');
+      const playerContainer = document.getElementById('player-container');
+      const loadingOverlay = document.getElementById('loading-overlay');
+      const errorOverlay = document.getElementById('error-overlay');
+      const errorTitle = document.getElementById('error-title');
+      const errorSub = document.getElementById('error-sub');
+      const floatingUnmute = document.getElementById('floating-unmute');
+      const unmuteBadge = document.getElementById('unmute-badge');
+      const unmuteBadgeIcon = document.getElementById('unmute-badge-icon');
+      const unmuteBadgeText = document.getElementById('unmute-badge-text');
+      const btnToggleAudio = document.getElementById('btn-toggle-audio');
+      const audioBtnIcon = document.getElementById('audio-btn-icon');
+      const audioBtnLabel = document.getElementById('audio-btn-label');
+      const btnPip = document.getElementById('btn-pip');
+      const btnFullscreen = document.getElementById('btn-fullscreen');
+      const btnReconnect = document.getElementById('btn-reconnect');
+      const streamerNameEl = document.getElementById('streamer-name');
+      const toast = document.getElementById('toast');
+      const toastMessage = document.getElementById('toast-message');
+
+      let hlsInstance = null;
+      let reconnectAttempts = 0;
+      let reconnectTimer = null;
+      let toastTimer = null;
+      const MAX_RECONNECT_ATTEMPTS = 15;
+
+      // Extract query parameters
+      const urlParams = new URLSearchParams(window.location.search);
+      const streamSrc = urlParams.get('src') || (window.__STREAM_SRC__ || '').trim();
+      const streamerParam = urlParams.get('streamer') || urlParams.get('user') || urlParams.get('name');
+
+      if (streamerParam) {
+        streamerNameEl.textContent = streamerParam;
+      }
+
+      function showToast(message, duration = 3000) {
+        if (toastTimer) clearTimeout(toastTimer);
+        toastMessage.textContent = message;
+        toast.classList.add('show');
+        toastTimer = setTimeout(() => {
+          toast.classList.remove('show');
+        }, duration);
+      }
+
+      function updateAudioState(isMuted) {
+        if (isMuted) {
+          unmuteBadge.classList.remove('active-audio');
+          unmuteBadgeIcon.textContent = '🔇';
+          unmuteBadgeText.textContent = 'Clique para desmutar áudio';
+          audioBtnIcon.textContent = '🔊';
+          audioBtnLabel.textContent = 'Desmutar Áudio';
+          floatingUnmute.style.display = 'flex';
+        } else {
+          unmuteBadge.classList.add('active-audio');
+          unmuteBadgeIcon.textContent = '🔊';
+          unmuteBadgeText.textContent = 'Áudio Ativado';
+          audioBtnIcon.textContent = '🔇';
+          audioBtnLabel.textContent = 'Mutar Áudio';
+          floatingUnmute.style.display = 'none';
+        }
+      }
+
+      function toggleAudio() {
+        if (video.muted) {
+          video.muted = false;
+          video.volume = 1.0;
+          video.play().catch(function() {});
+          updateAudioState(false);
+          showToast('🔊 Áudio ativado!');
+        } else {
+          video.muted = true;
+          updateAudioState(true);
+          showToast('🔇 Áudio mutado');
+        }
+      }
+
+      unmuteBadge.addEventListener('click', toggleAudio);
+      btnToggleAudio.addEventListener('click', toggleAudio);
+      floatingUnmute.addEventListener('click', toggleAudio);
+
+      video.addEventListener('volumechange', () => {
+        updateAudioState(video.muted || video.volume === 0);
+      });
+
+      // Picture-in-Picture
+      btnPip.addEventListener('click', async () => {
+        try {
+          if (document.pictureInPictureElement) {
+            await document.exitPictureInPicture();
+          } else if (document.pictureInPictureEnabled && video.requestPictureInPicture) {
+            await video.requestPictureInPicture();
+          } else {
+            showToast('⚠️ Picture-in-Picture não suportado no momento.');
+          }
+        } catch (err) {
+          console.warn('PiP error:', err);
+          showToast('Não foi possível ativar Janela Flutuante.');
+        }
+      });
+
+      // Fullscreen
+      btnFullscreen.addEventListener('click', () => {
+        if (!document.fullscreenElement) {
+          if (playerContainer.requestFullscreen) {
+            playerContainer.requestFullscreen();
+          } else if (playerContainer.webkitRequestFullscreen) {
+            playerContainer.webkitRequestFullscreen();
+          } else if (video.webkitEnterFullscreen) {
+            video.webkitEnterFullscreen();
+          }
+        } else {
+          if (document.exitFullscreen) {
+            document.exitFullscreen();
+          } else if (document.webkitExitFullscreen) {
+            document.webkitExitFullscreen();
+          }
+        }
+      });
+
+      // Video Event Listeners for Loading States
+      video.addEventListener('playing', () => {
+        loadingOverlay.classList.add('hidden');
+        errorOverlay.classList.add('hidden');
+        reconnectAttempts = 0;
+      });
+
+      video.addEventListener('waiting', () => {
+        if (errorOverlay.classList.contains('hidden')) {
+          loadingOverlay.classList.remove('hidden');
+        }
+      });
+
+      video.addEventListener('canplay', () => {
+        loadingOverlay.classList.add('hidden');
+      });
+
+      // Auto-reconnect on stall
+      video.addEventListener('stalled', () => {
+        console.warn('Reprodução travada (stalled), verificando stream...');
+        scheduleAutoReconnect(1500);
+      });
+
+      function scheduleAutoReconnect(delayMs = 2500) {
+        if (reconnectTimer) return;
+        reconnectAttempts++;
+        if (reconnectAttempts > MAX_RECONNECT_ATTEMPTS) {
+          showError('Transmissão Offline', 'A transmissão parece ter sido encerrada pelo streamer.');
+          return;
+        }
+
+        showToast(`Reconectando à transmissão (tentativa ${reconnectAttempts}/${MAX_RECONNECT_ATTEMPTS})...`);
+        reconnectTimer = setTimeout(() => {
+          reconnectTimer = null;
+          initStream();
+        }, delayMs);
+      }
+
+      function showError(title, message) {
+        loadingOverlay.classList.add('hidden');
+        errorTitle.textContent = title;
+        errorSub.textContent = message;
+        errorOverlay.classList.remove('hidden');
+      }
+
+      function initStream() {
+        if (!streamSrc) {
+          showError('Nenhuma fonte especificada', 'Adicione o parâmetro ?src=<url_do_stream> para carregar a transmissão.');
+          return;
+        }
+
+        loadingOverlay.classList.remove('hidden');
+        errorOverlay.classList.add('hidden');
+
+        // Check for Hls.js support
+        if (window.Hls && Hls.isSupported()) {
+          if (hlsInstance) {
+            try {
+              hlsInstance.destroy();
+            } catch (e) {}
+            hlsInstance = null;
+          }
+
+          const hlsConfig = {
+            lowLatencyMode: true,
+            liveSyncDurationCount: 1,
+            backBufferLength: 10,
+            maxBufferLength: 2,
+            liveDurationInfinity: true,
+            enableWorker: true,
+            manifestLoadingTimeOut: 8000,
+            manifestLoadingMaxRetry: 6,
+            levelLoadingTimeOut: 8000,
+            levelLoadingMaxRetry: 6,
+            fragLoadingTimeOut: 8000,
+            fragLoadingMaxRetry: 6
+          };
+
+          hlsInstance = new Hls(hlsConfig);
+          hlsInstance.loadSource(streamSrc);
+          hlsInstance.attachMedia(video);
+
+          hlsInstance.on(Hls.Events.MANIFEST_PARSED, () => {
+            console.log('HLS Manifest carregado com sucesso!');
+            video.play().catch((err) => {
+              console.log('Autoplay com áudio bloqueado pelo navegador, continuando mutado:', err);
+              video.muted = true;
+              updateAudioState(true);
+              video.play().catch(function() {});
+            });
+          });
+
+          hlsInstance.on(Hls.Events.ERROR, (event, data) => {
+            console.warn('HLS Evento de Erro:', data.type, data.details, 'Fatal:', data.fatal);
+            if (data.fatal) {
+              switch (data.type) {
+                case Hls.ErrorTypes.NETWORK_ERROR:
+                  console.log('Erro de rede fatal no HLS, tentando recuperar...');
+                  showToast('Falha na rede, tentando restabelecer sinal...');
+                  hlsInstance.startLoad();
+                  scheduleAutoReconnect(2000);
+                  break;
+                case Hls.ErrorTypes.MEDIA_ERROR:
+                  console.log('Erro fatal de mídia no HLS, tentando recuperar decodificação...');
+                  hlsInstance.recoverMediaError();
+                  break;
+                default:
+                  console.log('Erro irrecuperável detectado, destruindo player e agendando reinício...');
+                  scheduleAutoReconnect(3000);
+                  break;
+              }
+            }
+          });
+        } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+          // Native HLS fallback for Safari / iOS
+          console.log('Usando suporte nativo a HLS (Safari/iOS)');
+          video.src = streamSrc;
+          video.addEventListener('loadedmetadata', () => {
+            video.play().catch((err) => {
+              console.log('Autoplay bloqueado no Safari, mantendo mutado:', err);
+              video.muted = true;
+              updateAudioState(true);
+              video.play().catch(function() {});
+            });
+          });
+
+          video.addEventListener('error', () => {
+            console.warn('Erro na reprodução nativa de HLS');
+            scheduleAutoReconnect(2500);
+          });
+        } else {
+          showError('Navegador Incompatível', 'Seu navegador não suporta reprodução HLS nativa nem Hls.js.');
+        }
+      }
+
+      btnReconnect.addEventListener('click', () => {
+        reconnectAttempts = 0;
+        if (reconnectTimer) {
+          clearTimeout(reconnectTimer);
+          reconnectTimer = null;
+        }
+        initStream();
+      });
+
+      // Initial audio check
+      updateAudioState(video.muted);
+
+      // Start Stream
+      initStream();
+    })();
+  </script>
+</body>
+</html>

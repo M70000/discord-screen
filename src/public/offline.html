@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Transmissão Encerrada</title>
+  <style>
+    :root {
+      --bg-color: #0e1015;
+      --card-bg: #141720;
+      --card-border: rgba(255, 255, 255, 0.08);
+      --card-border-hover: rgba(255, 255, 255, 0.16);
+      --text-main: #f2f3f5;
+      --text-muted: #949ba4;
+      --accent-discord: #5865f2;
+      --accent-discord-hover: #4752c4;
+      --btn-bg: #1c202d;
+      --btn-hover: #262b3c;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      min-height: 100vh;
+      min-height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Ambient background glow */
+    .ambient-glow {
+      position: absolute;
+      width: 500px;
+      height: 500px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(88, 101, 242, 0.12) 0%, rgba(14, 16, 21, 0) 70%);
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .card {
+      position: relative;
+      z-index: 1;
+      background-color: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 48px 36px;
+      max-width: 520px;
+      width: 100%;
+      text-align: center;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.55);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      animation: fadeIn 0.4s ease-out;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(16px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .icon-container {
+      width: 96px;
+      height: 96px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.07);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 3.5rem;
+      margin-bottom: 24px;
+      user-select: none;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+    }
+
+    h1 {
+      font-size: 1.75rem;
+      font-weight: 700;
+      color: var(--text-main);
+      margin-bottom: 12px;
+      letter-spacing: -0.02em;
+    }
+
+    p {
+      color: var(--text-muted);
+      font-size: 1rem;
+      line-height: 1.5;
+      margin-bottom: 32px;
+      max-width: 420px;
+    }
+
+    .actions {
+      display: flex;
+      flex-direction: column;
+      width: 100%;
+      gap: 12px;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      padding: 13px 24px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      border-radius: 10px;
+      cursor: pointer;
+      text-decoration: none;
+      transition: all 0.2s ease;
+      border: 1px solid transparent;
+      user-select: none;
+      width: 100%;
+    }
+
+    .btn-primary {
+      background-color: var(--accent-discord);
+      color: #ffffff;
+      box-shadow: 0 4px 14px rgba(88, 101, 242, 0.35);
+    }
+
+    .btn-primary:hover {
+      background-color: var(--accent-discord-hover);
+      transform: translateY(-1px);
+      box-shadow: 0 6px 20px rgba(88, 101, 242, 0.45);
+    }
+
+    .btn-secondary {
+      background-color: var(--btn-bg);
+      color: var(--text-main);
+      border-color: var(--card-border);
+    }
+
+    .btn-secondary:hover {
+      background-color: var(--btn-hover);
+      border-color: var(--card-border-hover);
+      transform: translateY(-1px);
+    }
+
+    .btn:active {
+      transform: translateY(0);
+    }
+
+    .footer-note {
+      margin-top: 28px;
+      font-size: 0.8rem;
+      color: rgba(148, 155, 164, 0.65);
+    }
+
+    @media (max-width: 480px) {
+      .card {
+        padding: 36px 20px;
+      }
+      h1 {
+        font-size: 1.5rem;
+      }
+      p {
+        font-size: 0.9rem;
+      }
+      .icon-container {
+        width: 80px;
+        height: 80px;
+        font-size: 2.8rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="ambient-glow"></div>
+
+  <div class="card">
+    <div class="icon-container">📺</div>
+    <h1>Transmissão Encerrada</h1>
+    <p>Esta transmissão de tela foi finalizada pelo streamer ou ainda não foi iniciada.</p>
+
+    <div class="actions">
+      <button class="btn btn-primary" id="btn-discord">
+        <span>💬</span>
+        <span>Voltar para o Discord</span>
+      </button>
+      <button class="btn btn-secondary" id="btn-close">
+        <span>✕</span>
+        <span>Fechar Aba</span>
+      </button>
+      <button class="btn btn-secondary" id="btn-reload" style="font-size: 0.85rem; padding: 10px 18px;">
+        <span>🔄</span>
+        <span>Tentar novamente</span>
+      </button>
+    </div>
+
+    <div class="footer-note">
+      Canal de transmissão: #telamento
+    </div>
+  </div>
+
+  <script>
+    document.getElementById('btn-discord').addEventListener('click', () => {
+      // Tenta abrir o aplicativo do Discord ou a versão web
+      const discordAppUrl = 'discord://app';
+      const discordWebUrl = 'https://discord.com/channels/@me';
+
+      // Abre a web e tenta o deep link nativo
+      window.location.href = discordAppUrl;
+      setTimeout(() => {
+        window.location.href = discordWebUrl;
+      }, 500);
+    });
+
+    document.getElementById('btn-close').addEventListener('click', () => {
+      window.close();
+      // Se window.close() for bloqueado pelo navegador por não ter sido aberta por script:
+      setTimeout(() => {
+        if (!window.closed) {
+          window.history.back();
+        }
+      }, 200);
+    });
+
+    document.getElementById('btn-reload').addEventListener('click', () => {
+      if (document.referrer && document.referrer.includes('player.html')) {
+        window.location.href = document.referrer;
+      } else {
+        window.location.reload();
+      }
+    });
+  </script>
+</body>
+</html>
