@@ -221,10 +221,6 @@ async function startStreamSession(client, streamData) {
         .setStyle(ButtonStyle.Link)
         .setURL(watchUrl),
       new ButtonBuilder()
-        .setLabel('📶 Link Direto (Stream)')
-        .setStyle(ButtonStyle.Link)
-        .setURL(streamUrl),
-      new ButtonBuilder()
         .setCustomId('pip_tip')
         .setLabel('❓ Dicas & Ajuda')
         .setStyle(ButtonStyle.Secondary)
