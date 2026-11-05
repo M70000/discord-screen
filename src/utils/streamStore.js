@@ -6,6 +6,39 @@ class StreamStore {
   constructor() {
     this.activeStreams = new Map(); // userId -> streamData
     this.streamsById = new Map();   // streamId -> streamData
+    this.preferredChannels = new Map(); // userId -> { channelId, timestamp }
+  }
+
+  /**
+   * Salva um canal preferencial temporário para o próximo início de live.
+   * @param {string} userId
+   * @param {string} channelId
+   */
+  setPreferredChannel(userId, channelId) {
+    this.preferredChannels.set(userId, { channelId, timestamp: Date.now() });
+  }
+
+  /**
+   * Retorna o canal preferencial temporário do usuário (se ainda válido nos últimos 15 min).
+   * @param {string} userId
+   * @returns {string|null}
+   */
+  getPreferredChannel(userId) {
+    const entry = this.preferredChannels.get(userId);
+    if (!entry) return null;
+    if (Date.now() - entry.timestamp > 15 * 60 * 1000) {
+      this.preferredChannels.delete(userId);
+      return null;
+    }
+    return entry.channelId;
+  }
+
+  /**
+   * Limpa o canal preferencial do usuário.
+   * @param {string} userId
+   */
+  clearPreferredChannel(userId) {
+    this.preferredChannels.delete(userId);
   }
 
   /**

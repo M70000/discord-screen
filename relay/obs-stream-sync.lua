@@ -28,18 +28,26 @@ local function send_bot_webhook(endpoint, payload_table)
     local clean_bot_url = bot_url:gsub("/+$", "")
     local full_url = clean_bot_url .. endpoint
 
-    -- Monta o JSON manualmente para evitar dependências externas de Lua
-    local json_parts = {}
-    for k, v in pairs(payload_table) do
-        table.insert(json_parts, string.format('"%s":"%s"', k, tostring(v)))
-    end
-    local json_str = "{" .. table.concat(json_parts, ",") .. "}"
+    local u = payload_table.userId or discord_user_id
+    local s = payload_table.streamUrl or ""
+    local sec = payload_table.secret or webhook_secret
 
-    local ps_script = string.format(
-        "$headers = @{ 'Content-Type' = 'application/json'; 'X-Webhook-Secret' = '%s' }; " ..
-        "try { Invoke-RestMethod -Uri '%s' -Method Post -Headers $headers -Body '%s' -TimeoutSec 5 } catch { Write-Host $_ }",
-        webhook_secret, full_url, json_str
-    )
+    local ps_script
+    if s ~= "" then
+        ps_script = string.format(
+            "$u = '%s'; $s = '%s'; $sec = '%s'; " ..
+            "$body = @{ userId = $u; streamUrl = $s; secret = $sec } | ConvertTo-Json -Compress; " ..
+            "try { Invoke-RestMethod -Uri '%s' -Method Post -ContentType 'application/json' -Headers @{ 'X-Webhook-Secret' = $sec } -Body $body -TimeoutSec 10 } catch { Write-Host $_ }",
+            u, s, sec, full_url
+        )
+    else
+        ps_script = string.format(
+            "$u = '%s'; $sec = '%s'; " ..
+            "$body = @{ userId = $u; secret = $sec } | ConvertTo-Json -Compress; " ..
+            "try { Invoke-RestMethod -Uri '%s' -Method Post -ContentType 'application/json' -Headers @{ 'X-Webhook-Secret' = $sec } -Body $body -TimeoutSec 10 } catch { Write-Host $_ }",
+            u, sec, full_url
+        )
+    end
 
     run_hidden(ps_script)
 end
@@ -53,7 +61,7 @@ local function start_mediamtx()
     if f then
         f:close()
         print("[OBS Sync] Inicializando MediaMTX em segundo plano...")
-        local cmd = string.format("Start-Process -FilePath '%s' -ArgumentList '%s' -WindowStyle Hidden", mediamtx_exe, config_file)
+        local cmd = string.format("if (-not (Get-Process 'mediamtx' -ErrorAction SilentlyContinue)) { Start-Process -FilePath '%s' -ArgumentList '%s' -WorkingDirectory '%s' -WindowStyle Hidden }", mediamtx_exe, config_file, script_dir)
         run_hidden(cmd)
     else
         print("[OBS Sync] mediamtx.exe não encontrado em " .. script_dir .. ". Execute install-relay.bat.")

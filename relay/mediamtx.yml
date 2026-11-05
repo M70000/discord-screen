@@ -10,11 +10,11 @@ rtmpAddress: :1935
 hls: yes
 hlsAddress: :8888
 hlsAlwaysRemux: yes
-hlsSegmentCount: 5
+hlsSegmentCount: 7
 hlsSegmentDuration: 1s
 hlsPartDuration: 200ms
 hlsSegmentMaxSize: 50M
-hlsAllowOrigin: '*'
+hlsAllowOrigins: ['*']
 
 # Desativa outros protocolos para economizar recursos (<15MB RAM)
 rtsp: no
@@ -23,3 +23,6 @@ srt: no
 
 paths:
   all: {}
+
+moq: no
+

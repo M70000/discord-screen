@@ -37,38 +37,49 @@ async function canManageMember(guild, member) {
 }
 
 /**
- * Localiza o canal de texto de anúncios (padrão #telamento).
+ * Localiza o canal de texto de anúncios (por preferência, ID ou nome).
  * @param {import('discord.js').Guild} guild
+ * @param {string} [preferredChannelId]
  * @returns {Promise<import('discord.js').TextBasedChannel|null>}
  */
-async function findAnnouncementChannel(guild) {
+async function findAnnouncementChannel(guild, preferredChannelId) {
   if (!guild) return null;
 
-  // 1. Busca por ID configurado em variável de ambiente
-  if (process.env.ANNOUNCEMENT_CHANNEL_ID) {
-    const channelById = guild.channels?.cache?.get(process.env.ANNOUNCEMENT_CHANNEL_ID)
-      || (guild.channels?.fetch ? await guild.channels.fetch(process.env.ANNOUNCEMENT_CHANNEL_ID).catch(() => null) : null);
-    if (channelById && typeof channelById.isTextBased === 'function' && channelById.isTextBased()) {
+  // 1. Canal preferencial (ex: canal onde o comando /stream foi executado)
+  if (preferredChannelId) {
+    const channel = guild.channels?.cache?.get(preferredChannelId)
+      || (guild.client?.channels?.fetch ? await guild.client.channels.fetch(preferredChannelId).catch(() => null) : null);
+    if (channel && typeof channel.send === 'function') {
+      return channel;
+    }
+  }
+
+  // 2. Busca por ID configurado em ANNOUNCEMENT_CHANNEL_ID
+  const envChannelId = process.env.ANNOUNCEMENT_CHANNEL_ID || '1550319455727525908';
+  if (envChannelId) {
+    const channelById = guild.channels?.cache?.get(envChannelId)
+      || (guild.client?.channels?.fetch ? await guild.client.channels.fetch(envChannelId).catch(() => null) : null);
+    if (channelById && typeof channelById.send === 'function') {
       return channelById;
     }
   }
 
-  // 2. Busca pelo nome do canal (padrão 'telamento')
+  // 3. Busca pelo nome do canal (padrão 'telamento')
   const targetName = (process.env.ANNOUNCEMENT_CHANNEL_NAME || 'telamento').toLowerCase();
   if (guild.channels?.cache) {
     for (const channel of guild.channels.cache.values()) {
-      if (channel && channel.name && channel.name.toLowerCase() === targetName) {
-        if (typeof channel.isTextBased === 'function' && channel.isTextBased()) {
+      if (channel && channel.name && channel.name.toLowerCase().includes(targetName)) {
+        if (typeof channel.send === 'function') {
           return channel;
         }
       }
     }
   }
 
-  // 3. Fallback: primeiro canal de texto onde o bot tem permissão de escrita
+  // 4. Fallback: primeiro canal acessível onde o bot consegue enviar mensagens
   if (guild.channels?.cache) {
     for (const channel of guild.channels.cache.values()) {
-      if (typeof channel.isTextBased === 'function' && channel.isTextBased()) {
+      if (typeof channel.send === 'function') {
         return channel;
       }
     }
@@ -158,8 +169,10 @@ async function startStreamSession(client, streamData) {
     }
   }
 
-  // Localiza o canal de anúncio (preferência pelo canal #telamento)
-  const channel = guild ? await findAnnouncementChannel(guild) : null;
+  // Localiza o canal de anúncio (preferência por canal onde foi digitado o comando ou ANNOUNCEMENT_CHANNEL_ID)
+  const preferredChannel = streamData.preferredChannelId || streamStore.getPreferredChannel(userId);
+  const channel = guild ? await findAnnouncementChannel(guild, preferredChannel) : null;
+  streamStore.clearPreferredChannel(userId);
   let messageId = null;
   let channelId = null;
 

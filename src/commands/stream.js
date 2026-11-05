@@ -19,6 +19,10 @@ module.exports = {
    */
   async execute(interaction) {
     const userId = interaction.user.id;
+    // Registra este canal como preferencial para a live deste usuário
+    if (interaction.channelId) {
+      streamStore.setPreferredChannel(userId, interaction.channelId);
+    }
     const activeStream = streamStore.getStream(userId);
 
     // Cenário 1: O usuário já está com transmissão ativa no OBS

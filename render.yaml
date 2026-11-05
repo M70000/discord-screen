@@ -14,5 +14,5 @@ services:
         sync: false
       - key: BASE_URL
         sync: false
-      - key: ANNOUNCEMENT_CHANNEL_NAME
-        value: telamento
+      - key: ANNOUNCEMENT_CHANNEL_ID
+        value: "1550319455727525908"
