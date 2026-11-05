@@ -79,6 +79,8 @@ module.exports = {
 
     // Cenário 2: Usuário offline (não iniciou o OBS ainda)
     const baseUrl = (process.env.BASE_URL || 'http://localhost:3000').replace(/\/+$/, '');
+    const downloadUrl = `${baseUrl}/download/install-relay.bat`;
+
     const guideEmbed = new EmbedBuilder()
       .setColor(0x5865F2) // Discord Blurple
       .setTitle('🎮 Como Iniciar sua Transmissão com OBS Studio')
@@ -86,11 +88,12 @@ module.exports = {
         'Nenhuma transmissão de tela foi detectada para você no momento.',
         '',
         '### 🚀 Passo a Passo Rápido:',
-        '1. Na pasta `relay`, execute o instalador **`install-relay.bat`** *(somente na primeira vez)*.',
+        `1. Baixe o instalador de 1 clique: **[📥 Baixar install-relay.bat](${downloadUrl})**`,
+        '   • Dê dois cliques no arquivo baixado para preparar tudo automaticamente.',
         '2. No OBS Studio, abra o menu superior **Ferramentas > Scripts** e adicione o arquivo **`obs-stream-sync.lua`**.',
-        '3. Nas opções do script, preencha:',
+        '3. Nas opções do script, preencha apenas:',
         `   • **ID do Discord:** \`${userId}\``,
-        `   • **URL do Bot:** \`${baseUrl}\``,
+        '   • *(A URL do Bot e a Chave Secreta já vêm 100% pré-configuradas!)*',
         '4. Em **Configurações > Transmissão** no OBS, use:',
         '   • **Serviço:** Personalizado...',
         '   • **Servidor:** `rtmp://localhost:1935/live`',
@@ -102,8 +105,20 @@ module.exports = {
         text: '🔒 Zero janelas extras. O OBS liga e desliga o relay automaticamente.'
       });
 
+    const guideRow = new ActionRowBuilder().addComponents(
+      new ButtonBuilder()
+        .setLabel('📥 Baixar Instalador (1 clique)')
+        .setStyle(ButtonStyle.Link)
+        .setURL(downloadUrl),
+      new ButtonBuilder()
+        .setLabel('📦 Código no GitHub')
+        .setStyle(ButtonStyle.Link)
+        .setURL('https://github.com/M70000/discord-screen')
+    );
+
     return interaction.reply({
       embeds: [guideEmbed],
+      components: [guideRow],
       flags: MessageFlags.Ephemeral
     });
   }

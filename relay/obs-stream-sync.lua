@@ -22,36 +22,43 @@ local function run_hidden(cmd)
     os.execute(ps_cmd)
 end
 
--- Envia requisição HTTP POST para o bot usando PowerShell nativo do Windows
-local function send_bot_webhook(endpoint, payload_table)
+-- Envia requisição HTTP POST para o bot com autodetecção do path da stream
+local function send_start_webhook(tunnel_base_url)
     if discord_user_id == "" or bot_url == "" then
         print("[OBS Sync] ID do Discord ou URL do Bot vazios. Webhook ignorado.")
         return
     end
 
     local clean_bot_url = bot_url:gsub("/+$", "")
-    local full_url = clean_bot_url .. endpoint
+    local full_url = clean_bot_url .. "/api/stream/start"
 
-    local u = payload_table.userId or discord_user_id
-    local s = payload_table.streamUrl or ""
-    local sec = payload_table.secret or webhook_secret
+    local ps_script = string.format(
+        "$u = '%s'; $tUrl = '%s'; $k = '%s'; $sec = '%s'; " ..
+        "try { $null = Invoke-WebRequest -Uri 'http://localhost:8888/live/live/index.m3u8' -Method Get -UseBasicParsing; $sub = 'live/live' } catch { $sub = $k }; " ..
+        "$finalUrl = \"$tUrl/$sub/index.m3u8\"; " ..
+        "$body = @{ userId = $u; streamUrl = $finalUrl; secret = $sec } | ConvertTo-Json -Compress; " ..
+        "try { Invoke-RestMethod -Uri '%s' -Method Post -ContentType 'application/json' -Headers @{ 'X-Webhook-Secret' = $sec } -Body $body -TimeoutSec 10 } catch { Write-Host $_ }",
+        discord_user_id, tunnel_base_url, stream_key, webhook_secret, full_url
+    )
 
-    local ps_script
-    if s ~= "" then
-        ps_script = string.format(
-            "$u = '%s'; $s = '%s'; $sec = '%s'; " ..
-            "$body = @{ userId = $u; streamUrl = $s; secret = $sec } | ConvertTo-Json -Compress; " ..
-            "try { Invoke-RestMethod -Uri '%s' -Method Post -ContentType 'application/json' -Headers @{ 'X-Webhook-Secret' = $sec } -Body $body -TimeoutSec 10 } catch { Write-Host $_ }",
-            u, s, sec, full_url
-        )
-    else
-        ps_script = string.format(
-            "$u = '%s'; $sec = '%s'; " ..
-            "$body = @{ userId = $u; secret = $sec } | ConvertTo-Json -Compress; " ..
-            "try { Invoke-RestMethod -Uri '%s' -Method Post -ContentType 'application/json' -Headers @{ 'X-Webhook-Secret' = $sec } -Body $body -TimeoutSec 10 } catch { Write-Host $_ }",
-            u, sec, full_url
-        )
+    run_hidden(ps_script)
+end
+
+-- Envia requisição HTTP POST simples (para stop)
+local function send_stop_webhook()
+    if discord_user_id == "" or bot_url == "" then
+        return
     end
+
+    local clean_bot_url = bot_url:gsub("/+$", "")
+    local full_url = clean_bot_url .. "/api/stream/stop"
+
+    local ps_script = string.format(
+        "$u = '%s'; $sec = '%s'; " ..
+        "$body = @{ userId = $u; secret = $sec } | ConvertTo-Json -Compress; " ..
+        "try { Invoke-RestMethod -Uri '%s' -Method Post -ContentType 'application/json' -Headers @{ 'X-Webhook-Secret' = $sec } -Body $body -TimeoutSec 10 } catch { Write-Host $_ }",
+        discord_user_id, webhook_secret, full_url
+    )
 
     run_hidden(ps_script)
 end
@@ -92,12 +99,7 @@ local function check_tunnel_ready()
             tunnel_timer_active = false
             print("[OBS Sync] Túnel Cloudflare ativo: " .. tunnel_url)
 
-            local hls_stream_url = string.format("%s/%s/index.m3u8", tunnel_url, stream_key)
-            send_bot_webhook("/api/stream/start", {
-                userId = discord_user_id,
-                streamUrl = hls_stream_url,
-                secret = webhook_secret
-            })
+            send_start_webhook(tunnel_url)
             return
         end
     end
@@ -145,10 +147,7 @@ local function on_event(event)
             tunnel_timer_active = false
         end
         run_hidden("Stop-Process -Name 'cloudflared' -Force -ErrorAction SilentlyContinue")
-        send_bot_webhook("/api/stream/stop", {
-            userId = discord_user_id,
-            secret = webhook_secret
-        })
+        send_stop_webhook()
     end
 end
 

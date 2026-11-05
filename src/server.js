@@ -183,7 +183,17 @@ function createServerInstance(options = {}) {
       }
     }
 
-    // 4. Status de Stream
+    // 4. Download do instalador do Relay
+    if (method === 'GET' && (pathname === '/download/installer' || pathname === '/download/install-relay.bat')) {
+      const installerPath = path.join(__dirname, '..', 'relay', 'install-relay.bat');
+      if (fs.existsSync(installerPath)) {
+        res.setHeader('Content-Disposition', 'attachment; filename="install-relay.bat"');
+        res.setHeader('Content-Type', 'application/x-bat');
+        return res.writeHead(200).end(fs.readFileSync(installerPath));
+      }
+    }
+
+    // 5. Status de Stream
     if (method === 'GET' && pathname.startsWith('/api/stream/status/')) {
       const id = pathname.replace('/api/stream/status/', '').trim();
       const stream = streamStore.getStreamById(id) || streamStore.getStream(id);
@@ -193,7 +203,7 @@ function createServerInstance(options = {}) {
       });
     }
 
-    // 5. Visualizador Web (Player / Watch)
+    // 6. Visualizador Web (Player / Watch)
     if (method === 'GET' && (pathname.startsWith('/watch/') || pathname.startsWith('/live/'))) {
       const id = pathname.replace(/^\/(watch|live)\//, '').trim();
       const stream = streamStore.getStreamById(id) || streamStore.getStream(id);
@@ -218,12 +228,14 @@ function createServerInstance(options = {}) {
         `);
       }
 
-      // Serve player.html com a URL injetada
+      // Serve player.html com a URL injetada no script e templates
       const playerPath = path.join(publicDir, 'player.html');
       if (fs.existsSync(playerPath)) {
         let html = fs.readFileSync(playerPath, 'utf8');
-        html = html.replace('{{STREAM_SRC}}', stream.streamUrl);
-        html = html.replace('{{STREAMER_NAME}}', stream.voiceChannelName || stream.userId);
+        const injection = `<script>window.__STREAM_SRC__ = ${JSON.stringify(stream.streamUrl)}; window.__STREAMER_NAME__ = ${JSON.stringify(stream.voiceChannelName || stream.userId)};</script>`;
+        html = html.replace('<head>', `<head>\n  ${injection}`);
+        html = html.replaceAll('{{STREAM_SRC}}', stream.streamUrl);
+        html = html.replaceAll('{{STREAMER_NAME}}', stream.voiceChannelName || stream.userId);
         return res.writeHead(200).end(html);
       }
 
