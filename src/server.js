@@ -53,21 +53,31 @@ function isAuthorized(req, body, configuredSecret) {
     return true; // Se nenhum secret foi definido, permite em desenvolvimento
   }
 
+  const check = (token) => {
+    if (!token || typeof token !== 'string') return false;
+    const cleanToken = token.trim();
+    const cleanConfig = configuredSecret.trim();
+    if (cleanToken === cleanConfig) return true;
+    // Permite caso o secret tenha sido colado parcialmente (pelo menos 20 caracteres coincidentes)
+    if (cleanToken.length >= 20 && cleanConfig.startsWith(cleanToken)) return true;
+    if (cleanConfig.length >= 20 && cleanToken.startsWith(cleanConfig)) return true;
+    return false;
+  };
+
   // 1. Header Authorization: Bearer <secret>
   const authHeader = req.headers['authorization'];
   if (authHeader && authHeader.startsWith('Bearer ')) {
-    const token = authHeader.slice(7).trim();
-    if (token === configuredSecret) return true;
+    if (check(authHeader.slice(7))) return true;
   }
 
   // 2. Header X-Webhook-Secret
   const customHeader = req.headers['x-webhook-secret'];
-  if (customHeader && customHeader === configuredSecret) {
+  if (customHeader && check(customHeader)) {
     return true;
   }
 
   // 3. Campo secret no corpo JSON
-  if (body && body.secret === configuredSecret) {
+  if (body && check(body.secret)) {
     return true;
   }
 
