@@ -10,3 +10,9 @@ services:
         sync: false
       - key: CLIENT_ID
         sync: false
+      - key: OBS_WEBHOOK_SECRET
+        sync: false
+      - key: BASE_URL
+        sync: false
+      - key: ANNOUNCEMENT_CHANNEL_NAME
+        value: telamento

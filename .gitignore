@@ -7,3 +7,6 @@ yarn-error.log*
 .DS_Store
 upload.zip
 .agents/
+*.exe
+*.zip
+relay/cloudflared.log
