@@ -678,7 +678,10 @@
           };
 
           hlsInstance = new Hls(hlsConfig);
-          hlsInstance.loadSource(streamSrc);
+          let currentSrc = streamSrc;
+          let triedAlternatePath = false;
+
+          hlsInstance.loadSource(currentSrc);
           hlsInstance.attachMedia(video);
 
           hlsInstance.on(Hls.Events.MANIFEST_PARSED, () => {
@@ -693,6 +696,24 @@
 
           hlsInstance.on(Hls.Events.ERROR, (event, data) => {
             console.warn('HLS Evento de Erro:', data.type, data.details, 'Fatal:', data.fatal);
+
+            // Se der 404 no manifest, alterna automaticamente entre /live/ e /live/live/ do MediaMTX
+            if (data.details === 'manifestLoadError' && !triedAlternatePath) {
+              triedAlternatePath = true;
+              let altSrc = null;
+              if (currentSrc.includes('/live/live/index.m3u8')) {
+                altSrc = currentSrc.replace('/live/live/index.m3u8', '/live/index.m3u8');
+              } else if (currentSrc.includes('/live/index.m3u8')) {
+                altSrc = currentSrc.replace('/live/index.m3u8', '/live/live/index.m3u8');
+              }
+              if (altSrc) {
+                console.log('Alternando automaticamente para rota alternativa do MediaMTX:', altSrc);
+                currentSrc = altSrc;
+                hlsInstance.loadSource(altSrc);
+                return;
+              }
+            }
+
             if (data.fatal) {
               switch (data.type) {
                 case Hls.ErrorTypes.NETWORK_ERROR:

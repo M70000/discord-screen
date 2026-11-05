@@ -11,9 +11,21 @@ local stream_key = DEFAULT_STREAM_KEY
 
 local script_dir = ""
 local log_file = ""
+local sync_log_file = ""
 local tunnel_timer_active = false
 local attempts = 0
 local max_attempts = 20
+
+local function log_sync(msg)
+    if sync_log_file ~= "" then
+        local f = io.open(sync_log_file, "a")
+        if f then
+            f:write(os.date("[%Y-%m-%d %H:%M:%S] ") .. msg .. "\n")
+            f:close()
+        end
+    end
+    print("[OBS Sync] " .. msg)
+end
 
 -- Executa um comando silenciosamente no Windows sem exibir janela CMD
 local function run_hidden(cmd)
@@ -25,12 +37,13 @@ end
 -- Envia requisição HTTP POST para o bot com autodetecção do path da stream
 local function send_start_webhook(tunnel_base_url)
     if discord_user_id == "" or bot_url == "" then
-        print("[OBS Sync] ID do Discord ou URL do Bot vazios. Webhook ignorado.")
+        log_sync("ID do Discord ou URL do Bot vazios. Webhook ignorado.")
         return
     end
 
     local clean_bot_url = bot_url:gsub("/+$", "")
     local full_url = clean_bot_url .. "/api/stream/start"
+    log_sync("Disparando webhook START para: " .. full_url .. " (Tunnel: " .. tunnel_base_url .. ")")
 
     local ps_script = string.format(
         "$u = '%s'; $tUrl = '%s'; $sec = '%s'; " ..
@@ -41,8 +54,8 @@ local function send_start_webhook(tunnel_base_url)
         "}; " ..
         "$finalUrl = $tUrl + '/' + $sub + '/index.m3u8'; " ..
         "$body = @{ userId = $u; streamUrl = $finalUrl; secret = $sec } | ConvertTo-Json -Compress; " ..
-        "try { Invoke-RestMethod -Uri '%s' -Method Post -ContentType 'application/json' -Headers @{ 'X-Webhook-Secret' = $sec } -Body $body -TimeoutSec 10 } catch { Write-Host $_ }",
-        discord_user_id, tunnel_base_url, webhook_secret, full_url
+        "try { $res = Invoke-RestMethod -Uri '%s' -Method Post -ContentType 'application/json' -Headers @{ 'X-Webhook-Secret' = $sec } -Body $body -TimeoutSec 10; Add-Content -Path '%s' -Value ('[Webhook Start OK] ' + ($res | ConvertTo-Json -Compress)) } catch { Add-Content -Path '%s' -Value ('[Webhook Start ERRO] ' + $_.Exception.Message) }",
+        discord_user_id, tunnel_base_url, webhook_secret, full_url, sync_log_file, sync_log_file
     )
 
     run_hidden(ps_script)
@@ -56,12 +69,13 @@ local function send_stop_webhook()
 
     local clean_bot_url = bot_url:gsub("/+$", "")
     local full_url = clean_bot_url .. "/api/stream/stop"
+    log_sync("Disparando webhook STOP para: " .. full_url)
 
     local ps_script = string.format(
         "$u = '%s'; $sec = '%s'; " ..
         "$body = @{ userId = $u; secret = $sec } | ConvertTo-Json -Compress; " ..
-        "try { Invoke-RestMethod -Uri '%s' -Method Post -ContentType 'application/json' -Headers @{ 'X-Webhook-Secret' = $sec } -Body $body -TimeoutSec 10 } catch { Write-Host $_ }",
-        discord_user_id, webhook_secret, full_url
+        "try { $res = Invoke-RestMethod -Uri '%s' -Method Post -ContentType 'application/json' -Headers @{ 'X-Webhook-Secret' = $sec } -Body $body -TimeoutSec 10; Add-Content -Path '%s' -Value ('[Webhook Stop OK] ' + ($res | ConvertTo-Json -Compress)) } catch { Add-Content -Path '%s' -Value ('[Webhook Stop ERRO] ' + $_.Exception.Message) }",
+        discord_user_id, webhook_secret, full_url, sync_log_file, sync_log_file
     )
 
     run_hidden(ps_script)
@@ -142,10 +156,11 @@ end
 -- Interceptador de eventos do OBS
 local function on_event(event)
     if event == obs.OBS_FRONTEND_EVENT_STREAMING_STARTED then
-        print("[OBS Sync] Transmissão iniciada no OBS!")
+        log_sync("Evento detectado: STREAMING_STARTED (Iniciar Transmissao)")
+        start_mediamtx()
         start_tunnel()
     elseif event == obs.OBS_FRONTEND_EVENT_STREAMING_STOPPED then
-        print("[OBS Sync] Transmissão finalizada no OBS.")
+        log_sync("Evento detectado: STREAMING_STOPPED (Interromper Transmissao)")
         if tunnel_timer_active then
             obs.timer_remove(check_tunnel_ready)
             tunnel_timer_active = false
@@ -209,10 +224,10 @@ function script_load(settings)
         script_dir = debug.getinfo(1).source:match("@?(.*[\\/])") or ""
     end
     log_file = script_dir .. "cloudflared.log"
-
+    sync_log_file = script_dir .. "obs-sync.log"
     obs.obs_frontend_add_event_callback(on_event)
     start_mediamtx()
-    print("[OBS Sync] Script carregado com sucesso. Diretório: " .. script_dir)
+    log_sync("Script carregado com sucesso. Diretorio: " .. script_dir)
 end
 
 function script_unload()
