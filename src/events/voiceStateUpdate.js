@@ -1,6 +1,6 @@
 const { Events } = require('discord.js');
 const streamStore = require('../utils/streamStore');
-const { endStreamSession } = require('../utils/streamManager');
+const { endStreamSession, canManageMember } = require('../utils/streamManager');
 
 module.exports = {
   name: Events.VoiceStateUpdate,
@@ -8,14 +8,14 @@ module.exports = {
 
   /**
    * Disparado quando o estado de voz de um membro é alterado.
-   * Encerra a transmissão automaticamente se o usuário transmissor sair do canal de voz.
+   * - Encerra a transmissão automaticamente se o usuário sair da call onde estava transmitindo.
+   * - Associa a transmissão à call caso o usuário tenha iniciado no OBS antes de entrar no canal de voz.
    *
    * @param {import('discord.js').VoiceState} oldState Estado de voz anterior
    * @param {import('discord.js').VoiceState} newState Novo estado de voz
    * @param {import('discord.js').Client} client Cliente Discord
    */
   async execute(oldState, newState, client) {
-    // Se o canal não mudou (usuário apenas mutou, desmutou, ligou câmera ou transmitiu pelo Discord), ignora
     if (oldState.channelId === newState.channelId) {
       return;
     }
@@ -23,16 +23,44 @@ module.exports = {
     const userId = newState.id || oldState.id;
     if (!userId) return;
 
-    // Verifica se esse usuário possui uma transmissão ativa registrada
     const activeStream = streamStore.getStream(userId);
     if (!activeStream) return;
 
-    // Se o usuário não está mais no canal onde iniciou a transmissão
-    // (desconectou completamente da call: newState.channelId === null, ou mudou de sala de voz)
-    if (newState.channelId !== activeStream.voiceChannelId) {
-      console.log(`[AutoEndStream] Usuário ${userId} saiu do canal de voz "${activeStream.voiceChannelName}". Finalizando transmissão...`);
-      const discordClient = client || oldState.client || newState.client;
-      await endStreamSession(discordClient, userId, { reason: 'voice_leave' });
+    const discordClient = client || oldState.client || newState.client;
+
+    // Cenário 1: Streamer já estava em uma sala de voz e saiu ou mudou de sala
+    if (activeStream.voiceChannelId) {
+      if (newState.channelId !== activeStream.voiceChannelId) {
+        console.log(`[VoiceState] Streamer ${userId} desconectou do canal de voz. Encerrando sessão...`);
+        await endStreamSession(discordClient, userId, { reason: 'voice_leave' });
+      }
+      return;
+    }
+
+    // Cenário 2: Streamer iniciou no OBS antes de entrar na call, e agora acabou de entrar
+    if (!activeStream.voiceChannelId && newState.channelId && newState.channel) {
+      activeStream.voiceChannelId = newState.channelId;
+      activeStream.voiceChannelName = newState.channel.name;
+
+      const member = newState.member;
+      const guild = newState.guild;
+      if (member && guild) {
+        const isManageable = await canManageMember(guild, member);
+        if (isManageable && !activeStream.changedNickname) {
+          try {
+            const suffix = ' | 🔴 LIVE';
+            activeStream.originalNickname = member.nickname ?? null;
+            const maxBaseLength = 32 - suffix.length;
+            const cleanBaseName = member.displayName.replace(/\s*\|\s*🔴\s*LIVE$/i, '');
+            const baseName = cleanBaseName.slice(0, maxBaseLength).trim();
+            await member.setNickname(`${baseName}${suffix}`);
+            activeStream.changedNickname = true;
+            console.log(`[VoiceState] Apelido de ${member.displayName} atualizado ao entrar na call.`);
+          } catch (e) {
+            console.warn('[VoiceState] Não foi possível atualizar apelido:', e.message);
+          }
+        }
+      }
     }
   }
 };

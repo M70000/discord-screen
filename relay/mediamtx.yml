@@ -1,0 +1,25 @@
+# MediaMTX Configuration for Discord Screen Sharing Relay
+logLevel: info
+logDestinations: [stdout]
+
+# RTMP Ingest (OBS envia para ca)
+rtmp: yes
+rtmpAddress: :1935
+
+# HLS Output (Low-Latency HLS para o navegador)
+hls: yes
+hlsAddress: :8888
+hlsAlwaysRemux: yes
+hlsSegmentCount: 5
+hlsSegmentDuration: 1s
+hlsPartDuration: 200ms
+hlsSegmentMaxSize: 50M
+hlsAllowOrigin: '*'
+
+# Desativa outros protocolos para economizar recursos (<15MB RAM)
+rtsp: no
+webrtc: no
+srt: no
+
+paths:
+  all: {}

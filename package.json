@@ -1,22 +1,26 @@
 {
-  "name": "discord-vdoninja-bot",
-  "version": "1.0.0",
-  "description": "Bot do Discord integrado ao VDO.ninja para Go Live alternativo em 1080p 60fps",
+  "name": "discord-obs-screen-relay",
+  "version": "2.0.0",
+  "description": "Bot do Discord integrado ao OBS Studio e Relay Local (MediaMTX + Cloudflare) para transmissões em 1080p 60fps sem travamentos",
   "main": "src/index.js",
   "scripts": {
     "start": "node src/index.js",
     "dev": "node --watch src/index.js",
-    "test": "node test/vdoBuilder.test.js"
+    "test": "node test/streamStore.test.js && node test/server.test.js && node test/streamManager.test.js && node test/commands.test.js && node test/webPlayer.test.js"
   },
   "engines": {
     "node": ">=20.0.0"
   },
   "keywords": [
     "discord",
-    "vdoninja",
-    "webrtc",
+    "obs",
+    "obs-studio",
+    "mediamtx",
+    "cloudflare-tunnel",
     "screenshare",
     "golive",
+    "hls",
+    "low-latency",
     "discord-bot"
   ],
   "author": "",

@@ -8,6 +8,9 @@ const {
   Collection,
   Options
 } = require('discord.js');
+const { startServer } = require('./server');
+const { startStreamSession, endStreamSession } = require('./utils/streamManager');
+const streamStore = require('./utils/streamStore');
 
 // 1. Verificacao inicial de variaveis de ambiente
 if (!process.env.DISCORD_TOKEN) {
@@ -120,11 +123,9 @@ process.on('uncaughtException', error => {
 const gracefulShutdown = async () => {
   console.log('\n[Bot] Desligamento solicitado. Encerrando streams ativas e restaurando apelidos...');
   try {
-    const { endStreamSession } = require('./utils/streamManager');
-    const streamStore = require('./utils/streamStore');
-    const activeUserIds = Array.from(streamStore.getAllStreams().keys());
-    for (const userId of activeUserIds) {
-      await endStreamSession(client, userId, { reason: 'manual' }).catch(() => null);
+    const activeStreams = streamStore.getAllStreams();
+    for (const stream of activeStreams) {
+      await endStreamSession(client, stream.userId, { reason: 'manual' }).catch(() => null);
     }
   } catch (err) {
     console.error('Erro durante desligamento gracioso:', err.message);
@@ -135,31 +136,23 @@ const gracefulShutdown = async () => {
 process.on('SIGINT', gracefulShutdown);
 process.on('SIGTERM', gracefulShutdown);
 
-// 6. Conexao com o Discord Gateway
+// 6. Conexão com o Discord Gateway
 client.login(process.env.DISCORD_TOKEN).catch(error => {
   console.log('\nFalha ao conectar ao Discord Gateway: ' + error.message);
-  console.log('Verifique se o token fornecido no .env e valido e tem as permissoes corretas no Developer Portal.\n');
+  console.log('Verifique se o token fornecido no .env é válido e tem as permissões corretas no Developer Portal.\n');
   process.exit(1);
 });
 
-// 7. Servidor HTTP de Health Check (para Render.com e pings 24/7 do UptimeRobot)
-const PORT = process.env.PORT || 3000;
-const server = http.createServer((req, res) => {
-  res.writeHead(200, { 'Content-Type': 'application/json' });
-  res.end(JSON.stringify({
-    status: 'online',
-    bot: client.user ? client.user.tag : 'conectando...',
-    gatewayStatus: client.ws?.status,
-    uptimeSeconds: Math.floor(process.uptime()),
-    timestamp: new Date().toISOString(),
-    diagnostics: {
-      lastDebug: lastDebugMessage,
-      lastError: lastGatewayError,
-      lastDisconnect: lastDisconnectInfo
-    }
-  }));
-});
-
-server.listen(PORT, () => {
-  console.log(`[HealthCheck] Servidor HTTP ouvindo na porta ${PORT}`);
+// 7. Inicialização do Servidor HTTP Integrado (Player Web + Webhooks do OBS)
+startServer({
+  port: process.env.PORT || 3000,
+  secret: process.env.OBS_WEBHOOK_SECRET,
+  onStreamStart: async (payload) => {
+    return await startStreamSession(client, payload);
+  },
+  onStreamStop: async (payload) => {
+    return await endStreamSession(client, payload.userId, { reason: 'manual' });
+  }
+}).catch(err => {
+  console.error('[HTTP Server] Falha ao iniciar servidor HTTP:', err);
 });
