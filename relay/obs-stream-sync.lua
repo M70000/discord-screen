@@ -1,9 +1,13 @@
 local obs = obslua
 
-local bot_url = "http://localhost:3000"
+local DEFAULT_BOT_URL = "https://discord-screen-relay.onrender.com"
+local DEFAULT_WEBHOOK_SECRET = "cbbf8a1f06c1b67fa5d87dc1c3a103b5769a5c80b717e3a598419b141f5b2daa"
+local DEFAULT_STREAM_KEY = "live"
+
+local bot_url = DEFAULT_BOT_URL
 local discord_user_id = ""
-local webhook_secret = ""
-local stream_key = "live"
+local webhook_secret = DEFAULT_WEBHOOK_SECRET
+local stream_key = DEFAULT_STREAM_KEY
 
 local script_dir = ""
 local log_file = ""
@@ -155,7 +159,7 @@ function script_description()
 <p>Sincroniza automaticamente a transmissão do OBS com o Bot do Discord e cria um túnel HTTPS para o Player Web.</p>
 <p><b>Como usar:</b></p>
 <ol>
-  <li>Preencha seu <b>ID do Discord</b> e a <b>URL do Bot</b> abaixo.</li>
+  <li>Preencha apenas o seu <b>ID do Discord</b> abaixo (a URL e a Chave Secreta já vêm pré-configuradas!).</li>
   <li>No OBS, configure a saída de transmissão para:
     <ul>
       <li><b>Servidor:</b> <code>rtmp://localhost:1935/live</code></li>
@@ -167,9 +171,15 @@ function script_description()
 ]]
 end
 
+function script_defaults(settings)
+    obs.obs_data_set_default_string(settings, "bot_url", DEFAULT_BOT_URL)
+    obs.obs_data_set_default_string(settings, "webhook_secret", DEFAULT_WEBHOOK_SECRET)
+    obs.obs_data_set_default_string(settings, "stream_key", DEFAULT_STREAM_KEY)
+end
+
 function script_properties()
     local props = obs.obs_properties_create()
-    obs.obs_properties_add_text(props, "bot_url", "URL do Bot (ex: http://localhost:3000)", obs.OBS_TEXT_DEFAULT)
+    obs.obs_properties_add_text(props, "bot_url", "URL do Bot (Render)", obs.OBS_TEXT_DEFAULT)
     obs.obs_properties_add_text(props, "discord_user_id", "Seu ID do Discord", obs.OBS_TEXT_DEFAULT)
     obs.obs_properties_add_text(props, "webhook_secret", "Chave Secreta (OBS_WEBHOOK_SECRET)", obs.OBS_TEXT_PASSWORD)
     obs.obs_properties_add_text(props, "stream_key", "Chave do Stream no MediaMTX (padrão: live)", obs.OBS_TEXT_DEFAULT)
@@ -178,10 +188,15 @@ end
 
 function script_update(settings)
     bot_url = obs.obs_data_get_string(settings, "bot_url")
+    if bot_url == "" then bot_url = DEFAULT_BOT_URL end
+
     discord_user_id = obs.obs_data_get_string(settings, "discord_user_id")
+
     webhook_secret = obs.obs_data_get_string(settings, "webhook_secret")
+    if webhook_secret == "" then webhook_secret = DEFAULT_WEBHOOK_SECRET end
+
     stream_key = obs.obs_data_get_string(settings, "stream_key")
-    if stream_key == "" then stream_key = "live" end
+    if stream_key == "" then stream_key = DEFAULT_STREAM_KEY end
 end
 
 function script_load(settings)

@@ -20,11 +20,9 @@ Ele baixará automaticamente o `mediamtx.exe` e o `cloudflared.exe` diretamente 
 2. No menu superior, clique em **Ferramentas** > **Scripts**.
 3. Na aba *Scripts*, clique no botão **`+`** (canto inferior esquerdo).
 4. Selecione o arquivo **`obs-stream-sync.lua`** que está nesta pasta.
-5. Nas opções que aparecerem na tela, preencha:
-   - **URL do Bot:** O endereço do bot (ex: `http://localhost:3000` ou a URL do Render).
-   - **Seu ID do Discord:** O seu ID de usuário do Discord (ex: `123456789012345678`).
-   - **Chave Secreta:** A chave configurada no `.env` do bot (`OBS_WEBHOOK_SECRET`).
-   - **Chave do Stream:** Deixe como `live`.
+5. Nas opções que aparecerem na tela:
+   - Preencha apenas o seu **ID do Discord** (ex: `123456789012345678`).
+   - A **URL do Bot**, a **Chave Secreta** e a **Chave do Stream** já vêm 100% pré-configuradas!
 
 ---
 

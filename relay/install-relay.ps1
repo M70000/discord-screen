@@ -87,7 +87,7 @@ Write-Host "1. Abra o OBS Studio."
 Write-Host "2. Va em: Ferramentas -> Scripts."
 Write-Host "3. Clique no botao [+] e selecione o arquivo:" -ForegroundColor Yellow
 Write-Host "   $PSScriptRoot\obs-stream-sync.lua" -ForegroundColor White
-Write-Host "4. Preencha seu ID do Discord, a URL do Bot e a Chave Secreta."
+Write-Host "4. Preencha apenas o seu ID do Discord (a URL e a Chave ja estao preenchidas!)."
 Write-Host "5. Em Configuracoes -> Transmissao no OBS:" -ForegroundColor Yellow
 Write-Host "   - Servico: Personalizado..."
 Write-Host "   - Servidor: rtmp://localhost:1935/live"
@@ -96,3 +96,4 @@ Write-Host ""
 Write-Host "Pronto! Sempre que clicar em 'Iniciar Transmissao', o bot" -ForegroundColor Green
 Write-Host "avisara a galera automaticamente no canal #telamento!" -ForegroundColor Green
 Write-Host ""
+
