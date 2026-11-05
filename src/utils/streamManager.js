@@ -156,7 +156,10 @@ async function startStreamSession(client, streamData) {
     const isManageable = await canManageMember(guild, member);
     if (isManageable) {
       try {
-        originalNickname = member.nickname ?? null;
+        const rawNick = member.nickname ?? null;
+        originalNickname = rawNick ? rawNick.replace(/\s*\|\s*🔴\s*LIVE$/i, '').trim() : null;
+        if (originalNickname === member.user?.username) originalNickname = null;
+
         const maxBaseLength = 32 - suffix.length;
         const cleanBaseName = member.displayName.replace(/\s*\|\s*🔴\s*LIVE$/i, '');
         const baseName = cleanBaseName.slice(0, maxBaseLength).trim();
@@ -329,21 +332,26 @@ async function endStreamSession(client, userId, options = {}) {
     }
   }
 
-  // Restaura apelido do usuário (sempre verifica se tem "🔴 LIVE" no apelido)
+  // Restaura apelido do usuário (sempre remove o sufixo 🔴 LIVE)
   try {
     const resolved = await resolveGuildAndMember(client, userId, activeStream?.guildId);
     if (resolved?.guild && resolved?.member) {
       const { guild, member } = resolved;
       const isManageable = await canManageMember(guild, member);
       if (isManageable) {
-        if (activeStream?.originalNickname !== undefined) {
-          await member.setNickname(activeStream.originalNickname ?? null);
-          console.log(`[Nickname] Apelido de ${member.displayName || userId} restaurado para original.`);
-        } else if (member.displayName.includes('🔴 LIVE')) {
-          const clean = member.displayName.replace(/\s*\|\s*🔴\s*LIVE$/i, '').trim();
-          await member.setNickname(clean === member.user.username ? null : clean);
-          console.log(`[Nickname] Apelido de ${member.displayName || userId} limpo.`);
+        let targetNick = null;
+        if (activeStream && activeStream.originalNickname !== undefined) {
+          targetNick = activeStream.originalNickname ? activeStream.originalNickname.replace(/\s*\|\s*🔴\s*LIVE$/i, '').trim() : null;
+        } else if (member.displayName.includes('🔴 LIVE') || (member.nickname && member.nickname.includes('🔴 LIVE'))) {
+          targetNick = (member.nickname || member.displayName).replace(/\s*\|\s*🔴\s*LIVE$/i, '').trim();
         }
+
+        if (targetNick && member.user?.username && targetNick.toLowerCase() === member.user.username.toLowerCase()) {
+          targetNick = null;
+        }
+
+        await member.setNickname(targetNick);
+        console.log(`[Nickname] Apelido de ${member.displayName || userId} restaurado para: "${targetNick || 'padrão'}".`);
       }
     }
   } catch (err) {
