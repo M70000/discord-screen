@@ -275,11 +275,9 @@ async function endStreamSession(client, userId, options = {}) {
   const reason = options.reason || 'manual';
   const activeStream = streamStore.getStream(userId);
 
-  if (!activeStream) {
-    return { success: false, reason: 'NOT_FOUND' };
+  if (activeStream) {
+    streamStore.deleteStream(userId);
   }
-
-  streamStore.deleteStream(userId);
 
   let footerText = 'Sessão encerrada pelo transmissor.';
   if (reason === 'voice_leave') {
@@ -289,7 +287,7 @@ async function endStreamSession(client, userId, options = {}) {
   }
 
   // Atualiza a mensagem no Discord removendo os botões
-  if (activeStream.channelId && activeStream.messageId && client?.channels) {
+  if (activeStream?.channelId && activeStream?.messageId && client?.channels) {
     try {
       const channel = client.channels.cache?.get(activeStream.channelId)
         || (client.channels.fetch ? await client.channels.fetch(activeStream.channelId).catch(() => null) : null);
@@ -331,26 +329,28 @@ async function endStreamSession(client, userId, options = {}) {
     }
   }
 
-  // Restaura apelido do usuário
-  if (activeStream.guildId && activeStream.changedNickname && client?.guilds) {
-    try {
-      const guild = client.guilds.cache?.get(activeStream.guildId)
-        || (client.guilds.fetch ? await client.guilds.fetch(activeStream.guildId).catch(() => null) : null);
-      if (guild) {
-        const member = guild.members?.cache?.get(userId)
-          || (guild.members?.fetch ? await guild.members.fetch(userId).catch(() => null) : null);
-        const isManageable = await canManageMember(guild, member);
-        if (member && isManageable) {
+  // Restaura apelido do usuário (sempre verifica se tem "🔴 LIVE" no apelido)
+  try {
+    const resolved = await resolveGuildAndMember(client, userId, activeStream?.guildId);
+    if (resolved?.guild && resolved?.member) {
+      const { guild, member } = resolved;
+      const isManageable = await canManageMember(guild, member);
+      if (isManageable) {
+        if (activeStream?.originalNickname !== undefined) {
           await member.setNickname(activeStream.originalNickname ?? null);
-          console.log(`[Nickname] Apelido de ${member.displayName || userId} restaurado.`);
+          console.log(`[Nickname] Apelido de ${member.displayName || userId} restaurado para original.`);
+        } else if (member.displayName.includes('🔴 LIVE')) {
+          const clean = member.displayName.replace(/\s*\|\s*🔴\s*LIVE$/i, '').trim();
+          await member.setNickname(clean === member.user.username ? null : clean);
+          console.log(`[Nickname] Apelido de ${member.displayName || userId} limpo.`);
         }
       }
-    } catch (err) {
-      console.warn(`[Nickname] Não foi possível restaurar apelido do usuário ${userId}:`, err.message);
     }
+  } catch (err) {
+    console.warn(`[Nickname] Não foi possível restaurar apelido do usuário ${userId}:`, err.message);
   }
 
-  return { success: true, activeStream };
+  return { success: true, activeStream: activeStream || null };
 }
 
 module.exports = {
