@@ -177,7 +177,7 @@ async function startStreamSession(client, streamData) {
   let channelId = null;
 
   const baseUrl = (process.env.BASE_URL || 'http://localhost:3000').replace(/\/+$/, '');
-  const watchUrl = `${baseUrl}/watch/${finalStreamId}`;
+  const watchUrl = `${baseUrl}/watch/${userId}`;
 
   if (channel) {
     channelId = channel.id;
