@@ -183,7 +183,16 @@ function createServerInstance(options = {}) {
       }
     }
 
-    // 4. Download do instalador do Relay
+    // 4. Download do instalador e pacote do Relay
+    if (method === 'GET' && (pathname === '/download/relay.zip' || pathname === '/download/installer.zip')) {
+      const zipPath = path.join(__dirname, '..', 'relay.zip');
+      if (fs.existsSync(zipPath)) {
+        res.setHeader('Content-Disposition', 'attachment; filename="relay.zip"');
+        res.setHeader('Content-Type', 'application/zip');
+        return res.writeHead(200).end(fs.readFileSync(zipPath));
+      }
+    }
+
     if (method === 'GET' && (pathname === '/download/installer' || pathname === '/download/install-relay.bat')) {
       const installerPath = path.join(__dirname, '..', 'relay', 'install-relay.bat');
       if (fs.existsSync(installerPath)) {

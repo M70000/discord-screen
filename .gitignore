@@ -9,4 +9,5 @@ upload.zip
 .agents/
 *.exe
 *.zip
+!relay.zip
 relay/cloudflared.log

@@ -79,7 +79,8 @@ module.exports = {
 
     // Cenário 2: Usuário offline (não iniciou o OBS ainda)
     const baseUrl = (process.env.BASE_URL || 'http://localhost:3000').replace(/\/+$/, '');
-    const downloadUrl = `${baseUrl}/download/install-relay.bat`;
+    const downloadZipUrl = `${baseUrl}/download/relay.zip`;
+    const downloadBatUrl = `${baseUrl}/download/install-relay.bat`;
 
     const guideEmbed = new EmbedBuilder()
       .setColor(0x5865F2) // Discord Blurple
@@ -88,8 +89,8 @@ module.exports = {
         'Nenhuma transmissão de tela foi detectada para você no momento.',
         '',
         '### 🚀 Passo a Passo Rápido:',
-        `1. Baixe o instalador de 1 clique: **[📥 Baixar install-relay.bat](${downloadUrl})**`,
-        '   • Dê dois cliques no arquivo baixado para preparar tudo automaticamente.',
+        `1. Baixe o pacote completo: **[📥 Baixar Pacote (relay.zip)](${downloadZipUrl})**`,
+        '   • Extraia a pasta e execute **`install-relay.bat`** *(baixa os arquivos em segundos)*.',
         '2. No OBS Studio, abra o menu superior **Ferramentas > Scripts** e adicione o arquivo **`obs-stream-sync.lua`**.',
         '3. Nas opções do script, preencha apenas:',
         `   • **ID do Discord:** \`${userId}\``,
@@ -107,13 +108,13 @@ module.exports = {
 
     const guideRow = new ActionRowBuilder().addComponents(
       new ButtonBuilder()
-        .setLabel('📥 Baixar Instalador (1 clique)')
+        .setLabel('📥 Baixar Pacote do Relay (.ZIP)')
         .setStyle(ButtonStyle.Link)
-        .setURL(downloadUrl),
+        .setURL(downloadZipUrl),
       new ButtonBuilder()
-        .setLabel('📦 Código no GitHub')
-        .setStyle(ButtonStyle.Link)
-        .setURL('https://github.com/M70000/discord-screen')
+        .setLabel('⚡ Baixar Instalador (.BAT)')
+        .setStyle(ButtonStyle.Secondary)
+        .setURL(downloadBatUrl)
     );
 
     return interaction.reply({
