@@ -109,7 +109,7 @@ module.exports = {
         .setURL(downloadZipUrl),
       new ButtonBuilder()
         .setLabel('⚡ Baixar Instalador (.BAT)')
-        .setStyle(ButtonStyle.Secondary)
+        .setStyle(ButtonStyle.Link)
         .setURL(downloadBatUrl)
     );
 

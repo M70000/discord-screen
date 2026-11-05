@@ -44,7 +44,18 @@ function createMockInteraction(userId, isLive = false) {
   assert.ok(offlineReply.embeds && offlineReply.embeds.length > 0, 'Deveria retornar embeds com o guia do OBS');
   const embedDesc = offlineReply.embeds[0].data.description;
   assert.ok(embedDesc.includes('rtmp://localhost:1935/live'), 'Deveria conter a URL RTMP local no guia');
-  console.log('   [OK] /stream respondeu com o guia de configuração do OBS.');
+
+  // Valida que todos os botões com URL usam ButtonStyle.Link (style 5 no Discord)
+  if (offlineReply.components) {
+    for (const row of offlineReply.components) {
+      for (const btn of row.components) {
+        if (btn.data.url) {
+          assert.strictEqual(btn.data.style, 5, `Botão "${btn.data.label}" com URL deve usar ButtonStyle.Link (5)`);
+        }
+      }
+    }
+  }
+  console.log('   [OK] /stream respondeu com o guia de configuração do OBS e botões válidos.');
 
   // 2. Cenário Online: usuário já possui live ativa
   console.log('\n2. Testando /stream quando o usuário já está ao vivo...');
