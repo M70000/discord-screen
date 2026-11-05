@@ -33,12 +33,16 @@ local function send_start_webhook(tunnel_base_url)
     local full_url = clean_bot_url .. "/api/stream/start"
 
     local ps_script = string.format(
-        "$u = '%s'; $tUrl = '%s'; $k = '%s'; $sec = '%s'; " ..
-        "try { $null = Invoke-WebRequest -Uri 'http://localhost:8888/live/live/index.m3u8' -Method Get -UseBasicParsing; $sub = 'live/live' } catch { $sub = $k }; " ..
-        "$finalUrl = \"$tUrl/$sub/index.m3u8\"; " ..
+        "$u = '%s'; $tUrl = '%s'; $sec = '%s'; " ..
+        "$sub = 'live/live'; " ..
+        "for ($i = 0; $i -lt 10; $i++) { " ..
+        "    try { $null = Invoke-WebRequest -Uri 'http://localhost:8888/live/live/index.m3u8' -Method Get -UseBasicParsing -TimeoutSec 2; $sub = 'live/live'; break } " ..
+        "    catch { try { $null = Invoke-WebRequest -Uri 'http://localhost:8888/live/index.m3u8' -Method Get -UseBasicParsing -TimeoutSec 2; $sub = 'live'; break } catch { Start-Sleep -Milliseconds 600 } } " ..
+        "}; " ..
+        "$finalUrl = $tUrl + '/' + $sub + '/index.m3u8'; " ..
         "$body = @{ userId = $u; streamUrl = $finalUrl; secret = $sec } | ConvertTo-Json -Compress; " ..
         "try { Invoke-RestMethod -Uri '%s' -Method Post -ContentType 'application/json' -Headers @{ 'X-Webhook-Secret' = $sec } -Body $body -TimeoutSec 10 } catch { Write-Host $_ }",
-        discord_user_id, tunnel_base_url, stream_key, webhook_secret, full_url
+        discord_user_id, tunnel_base_url, webhook_secret, full_url
     )
 
     run_hidden(ps_script)
