@@ -8,20 +8,22 @@
   <style>
     :root {
       --bg-color: #0e1015;
-      --card-bg: #141720;
-      --card-border: rgba(255, 255, 255, 0.08);
-      --card-border-hover: rgba(255, 255, 255, 0.16);
+      --sidebar-bg: #12141a;
+      --card-bg: #161922;
+      --card-border: rgba(255, 255, 255, 0.07);
+      --card-border-hover: rgba(255, 255, 255, 0.18);
       --text-main: #f2f3f5;
       --text-muted: #949ba4;
       --accent-discord: #5865f2;
       --accent-discord-hover: #4752c4;
       --live-red: #f23f43;
+      --live-green: #57f287;
       --badge-bg: rgba(242, 63, 67, 0.15);
       --unmute-bg: rgba(240, 178, 50, 0.18);
       --unmute-border: rgba(240, 178, 50, 0.4);
       --unmute-text: #f0b232;
-      --btn-bg: #1c202d;
-      --btn-hover: #262b3c;
+      --btn-bg: rgba(24, 27, 37, 0.85);
+      --btn-hover: rgba(36, 41, 56, 0.95);
     }
 
     * {
@@ -41,47 +43,39 @@
       overflow-x: hidden;
     }
 
-    /* Top Header Banner */
+    /* Top Compact Brand Bar */
     header {
-      background-color: var(--card-bg);
+      background-color: var(--sidebar-bg);
       border-bottom: 1px solid var(--card-border);
-      padding: 12px 20px;
+      padding: 10px 18px;
       display: flex;
       align-items: center;
       justify-content: space-between;
       gap: 16px;
-      flex-wrap: wrap;
-      z-index: 10;
+      z-index: 20;
     }
 
     .header-left {
       display: flex;
       align-items: center;
       gap: 12px;
-      flex-wrap: wrap;
     }
 
-    .live-badge {
-      display: inline-flex;
+    .brand-logo {
+      font-size: 1.05rem;
+      font-weight: 800;
+      letter-spacing: -0.3px;
+      display: flex;
       align-items: center;
-      gap: 6px;
-      background: var(--badge-bg);
-      color: var(--live-red);
-      border: 1px solid rgba(242, 63, 67, 0.35);
-      font-weight: 700;
-      font-size: 0.82rem;
-      padding: 4px 10px;
-      border-radius: 999px;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
+      gap: 8px;
     }
 
     .live-dot {
-      width: 8px;
-      height: 8px;
+      width: 9px;
+      height: 9px;
       border-radius: 50%;
       background-color: var(--live-red);
-      box-shadow: 0 0 8px var(--live-red);
+      box-shadow: 0 0 10px var(--live-red);
       animation: pulse 1.6s infinite ease-in-out;
     }
 
@@ -90,159 +84,209 @@
       50% { transform: scale(1.35); opacity: 0.5; }
     }
 
-    .title-banner {
-      font-size: 1rem;
-      font-weight: 600;
+    /* Kick-style App Shell Layout */
+    .app-layout {
+      flex: 1;
+      display: flex;
+      width: 100%;
+      min-height: calc(100vh - 53px);
+      position: relative;
+    }
+
+    /* Left Sidebar: Lives Abertas */
+    .sidebar {
+      width: 240px;
+      background: var(--sidebar-bg);
+      border-right: 1px solid var(--card-border);
+      display: flex;
+      flex-direction: column;
+      transition: width 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      z-index: 15;
+      flex-shrink: 0;
+    }
+
+    .sidebar.collapsed {
+      width: 60px;
+    }
+
+    .sidebar-header {
+      padding: 14px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--card-border);
+    }
+
+    .sidebar-title {
+      font-size: 0.76rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      letter-spacing: 0.6px;
+      text-transform: uppercase;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      white-space: nowrap;
+      overflow: hidden;
+    }
+
+    .sidebar.collapsed .sidebar-title span:last-child {
+      display: none;
+    }
+
+    .btn-toggle-sidebar {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      font-size: 0.85rem;
+      padding: 4px;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: color 0.15s;
+    }
+
+    .btn-toggle-sidebar:hover {
+      color: #fff;
+    }
+
+    .sidebar-channels {
+      flex: 1;
+      overflow-y: auto;
+      padding: 8px 6px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .channel-item {
       display: flex;
       align-items: center;
       gap: 10px;
-    }
-
-    .streamer-pill {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      background: rgba(255, 255, 255, 0.06);
-      padding: 2px 10px;
-      border-radius: 6px;
-      font-size: 0.82rem;
-      color: var(--text-muted);
-      border: 1px solid var(--card-border);
-    }
-
-    .unmute-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      background: var(--unmute-bg);
-      border: 1px solid var(--unmute-border);
-      color: var(--unmute-text);
-      font-size: 0.82rem;
-      font-weight: 600;
-      padding: 6px 12px;
-      border-radius: 20px;
+      padding: 8px 10px;
+      border-radius: 8px;
       cursor: pointer;
-      transition: all 0.2s ease;
-      user-select: none;
-    }
-
-    .unmute-badge:hover {
-      filter: brightness(1.15);
-    }
-
-    .unmute-badge.active-audio {
-      background: rgba(46, 204, 113, 0.15);
-      border-color: rgba(46, 204, 113, 0.4);
-      color: #2ecc71;
-    }
-
-    /* Multi-view Bar (when multiple streams are active) */
-    .multiview-bar {
-      background: #141722;
-      border-bottom: 1px solid var(--card-border);
-      padding: 8px 20px;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      overflow-x: auto;
-      z-index: 9;
-      font-size: 0.85rem;
-    }
-
-    .multiview-label {
-      color: var(--text-muted);
-      font-weight: 600;
-      white-space: nowrap;
-    }
-
-    .multiview-list {
-      display: flex;
-      gap: 8px;
-      align-items: center;
-    }
-
-    .multiview-btn {
-      background: rgba(255, 255, 255, 0.06);
-      border: 1px solid var(--card-border);
-      color: var(--text-main);
-      padding: 4px 10px;
-      border-radius: 6px;
-      cursor: pointer;
-      font-size: 0.8rem;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      transition: all 0.15s ease;
-      white-space: nowrap;
       text-decoration: none;
+      color: var(--text-main);
+      transition: background 0.15s;
+      position: relative;
     }
 
-    .multiview-btn:hover {
-      background: rgba(255, 255, 255, 0.12);
+    .channel-item:hover {
+      background: rgba(255, 255, 255, 0.05);
     }
 
-    .multiview-btn.active {
-      background: var(--accent-discord);
-      border-color: var(--accent-discord);
-      color: #fff;
+    .channel-item.active {
+      background: rgba(88, 101, 242, 0.16);
+      border: 1px solid rgba(88, 101, 242, 0.35);
+    }
+
+    .channel-avatar {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      background: #242938;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1rem;
+      flex-shrink: 0;
+      position: relative;
+    }
+
+    .channel-avatar .avatar-live-indicator {
+      position: absolute;
+      bottom: -1px;
+      right: -1px;
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: var(--live-red);
+      border: 2px solid var(--sidebar-bg);
+    }
+
+    .channel-info {
+      flex: 1;
+      min-width: 0;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .sidebar.collapsed .channel-info {
+      display: none;
+    }
+
+    .channel-name {
+      font-size: 0.86rem;
       font-weight: 600;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
-    /* Main Content / Player Area */
-    main {
+    .channel-call {
+      font-size: 0.74rem;
+      color: var(--text-muted);
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* Main Theater Area */
+    .main-theater {
       flex: 1;
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: center;
-      padding: 16px 20px;
-      width: 100%;
-      max-width: 1500px;
-      margin: 0 auto;
+      padding: 18px 24px 30px;
+      min-width: 0;
       position: relative;
     }
 
     .player-wrapper {
       position: relative;
       width: 100%;
+      max-width: 1360px;
       display: flex;
       justify-content: center;
       align-items: center;
     }
 
-    /* Ambient Glow Canvas */
+    /* Philips Ambilight Inspired Glow */
     .ambient-glow {
       position: absolute;
-      top: -6%;
-      left: -6%;
-      width: 112%;
-      height: 112%;
-      filter: blur(70px);
-      opacity: 0.45;
+      top: -14%;
+      left: -14%;
+      width: 128%;
+      height: 128%;
+      filter: blur(105px) saturate(2.6) brightness(1.25);
+      opacity: 0.85;
       pointer-events: none;
       z-index: 0;
       transition: opacity 0.4s ease;
-      border-radius: 24px;
+      border-radius: 40px;
+      transform: translateZ(0);
     }
 
     .ambient-glow.hidden {
-      opacity: 0;
+      opacity: 0 !important;
     }
 
     .player-container {
       position: relative;
       width: 100%;
-      max-width: 1380px;
       aspect-ratio: 16 / 9;
       background-color: #000;
-      border-radius: 12px;
+      border-radius: 14px;
       overflow: hidden;
       border: 1px solid var(--card-border);
-      box-shadow: 0 12px 36px rgba(0, 0, 0, 0.6);
+      box-shadow: 0 16px 48px rgba(0, 0, 0, 0.75);
       display: flex;
       align-items: center;
       justify-content: center;
       z-index: 1;
+      cursor: default;
     }
 
     video {
@@ -257,13 +301,13 @@
     .overlay-message {
       position: absolute;
       inset: 0;
-      background: rgba(14, 16, 21, 0.9);
+      background: rgba(14, 16, 21, 0.92);
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
       gap: 12px;
-      z-index: 5;
+      z-index: 6;
       padding: 24px;
       text-align: center;
     }
@@ -297,127 +341,29 @@
       line-height: 1.4;
     }
 
-    /* Stats for Nerds HUD */
-    .stats-overlay {
+    /* Kick-style Integrated On-Hover Controls Bar */
+    .player-controls-overlay {
       position: absolute;
-      top: 14px;
-      left: 14px;
-      background: rgba(10, 12, 16, 0.88);
-      backdrop-filter: blur(8px);
-      border: 1px solid rgba(255, 255, 255, 0.12);
-      border-radius: 8px;
-      padding: 10px 14px;
-      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-      font-size: 0.76rem;
-      color: #e1e4ea;
-      line-height: 1.5;
-      z-index: 8;
-      box-shadow: 0 4px 14px rgba(0,0,0,0.5);
-      user-select: none;
-      pointer-events: none;
-    }
-
-    .stats-overlay.hidden {
-      display: none;
-    }
-
-    .stats-row {
-      display: flex;
-      justify-content: space-between;
-      gap: 16px;
-    }
-
-    .stats-key {
-      color: var(--text-muted);
-    }
-
-    .stats-val {
-      font-weight: 600;
-      color: #57f287;
-    }
-
-    /* Floating Reaction Dock */
-    .reaction-dock {
-      position: absolute;
-      right: 12px;
-      bottom: 16px;
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-      z-index: 8;
-      background: rgba(20, 23, 32, 0.85);
-      backdrop-filter: blur(8px);
-      border: 1px solid var(--card-border);
-      padding: 6px 4px;
-      border-radius: 24px;
-      box-shadow: 0 4px 16px rgba(0,0,0,0.4);
-      user-select: none;
-    }
-
-    .reaction-btn {
-      background: none;
-      border: none;
-      font-size: 1.3rem;
-      cursor: pointer;
-      padding: 4px;
-      border-radius: 50%;
-      transition: transform 0.12s ease;
-      line-height: 1;
-    }
-
-    .reaction-btn:hover {
-      transform: scale(1.35);
-    }
-
-    .reaction-btn:active {
-      transform: scale(0.9);
-    }
-
-    .reaction-container {
-      position: absolute;
-      inset: 0;
-      pointer-events: none;
-      overflow: hidden;
-      z-index: 7;
-    }
-
-    .floating-emoji {
-      position: absolute;
-      bottom: 24px;
-      right: 60px;
-      font-size: 2.2rem;
-      animation: floatReaction 2.2s ease-out forwards;
-      pointer-events: none;
-    }
-
-    @keyframes floatReaction {
-      0% {
-        transform: translateY(0) scale(0.6);
-        opacity: 0;
-      }
-      15% {
-        opacity: 1;
-        transform: translateY(-20px) scale(1.2);
-      }
-      80% {
-        opacity: 0.9;
-      }
-      100% {
-        transform: translateY(-240px) translateX(var(--drift, 0px)) scale(1.4);
-        opacity: 0;
-      }
-    }
-
-    /* Action Controls Bar */
-    .controls-bar {
-      width: 100%;
-      max-width: 1380px;
-      margin-top: 12px;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      padding: 24px 20px 14px;
+      background: linear-gradient(to top, rgba(0, 0, 0, 0.92) 0%, rgba(0, 0, 0, 0.45) 60%, transparent 100%);
       display: flex;
       align-items: center;
       justify-content: space-between;
       gap: 16px;
-      flex-wrap: wrap;
+      z-index: 5;
+      opacity: 1;
+      transition: opacity 0.28s ease, transform 0.28s ease;
+      transform: translateY(0);
+      user-select: none;
+    }
+
+    .player-controls-overlay.fade-out {
+      opacity: 0;
+      pointer-events: none;
+      transform: translateY(8px);
     }
 
     .controls-left, .controls-right {
@@ -432,6 +378,7 @@
       align-items: center;
       gap: 8px;
       background: var(--btn-bg);
+      backdrop-filter: blur(8px);
       border: 1px solid var(--card-border);
       padding: 0 10px 0 0;
       border-radius: 8px;
@@ -440,6 +387,7 @@
     .volume-group .btn {
       border: none;
       background: transparent;
+      padding-right: 6px;
     }
 
     .volume-slider {
@@ -451,10 +399,11 @@
 
     .btn {
       background: var(--btn-bg);
+      backdrop-filter: blur(8px);
       color: var(--text-main);
       border: 1px solid var(--card-border);
       padding: 8px 14px;
-      font-size: 0.88rem;
+      font-size: 0.86rem;
       font-weight: 500;
       border-radius: 8px;
       cursor: pointer;
@@ -462,7 +411,7 @@
       align-items: center;
       gap: 6px;
       user-select: none;
-      transition: all 0.2s ease;
+      transition: all 0.18s ease;
       text-decoration: none;
     }
 
@@ -470,10 +419,6 @@
       background: var(--btn-hover);
       border-color: var(--card-border-hover);
       transform: translateY(-1px);
-    }
-
-    .btn:active {
-      transform: translateY(0);
     }
 
     .btn.active {
@@ -487,17 +432,20 @@
       border-color: var(--accent-discord);
     }
 
-    .btn-primary:hover {
-      background: var(--accent-discord-hover);
-      border-color: var(--accent-discord-hover);
+    .btn-icon {
+      padding: 8px 10px;
     }
 
     .stream-meta {
       font-size: 0.82rem;
-      color: var(--text-muted);
+      color: #c9cdd4;
       display: flex;
       align-items: center;
       gap: 8px;
+      background: rgba(0, 0, 0, 0.4);
+      padding: 4px 10px;
+      border-radius: 20px;
+      backdrop-filter: blur(4px);
     }
 
     .status-dot {
@@ -507,7 +455,236 @@
       background-color: var(--live-red);
     }
 
-    /* Modal de Atalhos de Teclado */
+    .live-tag {
+      font-weight: 700;
+      color: var(--live-red);
+      font-size: 0.78rem;
+    }
+
+    /* Stats for Nerds HUD */
+    .stats-overlay {
+      position: absolute;
+      top: 14px;
+      left: 14px;
+      background: rgba(10, 12, 16, 0.9);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      border-radius: 8px;
+      padding: 12px 16px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 0.76rem;
+      color: #e1e4ea;
+      line-height: 1.55;
+      z-index: 7;
+      box-shadow: 0 8px 24px rgba(0,0,0,0.6);
+      user-select: none;
+      pointer-events: none;
+    }
+
+    .stats-overlay.hidden {
+      display: none;
+    }
+
+    .stats-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 18px;
+    }
+
+    .stats-key {
+      color: var(--text-muted);
+    }
+
+    .stats-val {
+      font-weight: 600;
+      color: #57f287;
+    }
+
+    /* Compact Expandable Reaction Dock */
+    .reaction-dock-wrapper {
+      position: absolute;
+      right: 18px;
+      bottom: 64px;
+      z-index: 8;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .reaction-menu {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      background: rgba(18, 20, 28, 0.92);
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--card-border-hover);
+      padding: 8px 6px;
+      border-radius: 26px;
+      box-shadow: 0 8px 28px rgba(0,0,0,0.55);
+      opacity: 0;
+      transform: translateY(12px) scale(0.85);
+      pointer-events: none;
+      transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .reaction-menu.expanded {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+      pointer-events: auto;
+    }
+
+    .reaction-btn {
+      background: none;
+      border: none;
+      font-size: 1.35rem;
+      cursor: pointer;
+      padding: 4px;
+      border-radius: 50%;
+      transition: transform 0.15s ease;
+      line-height: 1;
+    }
+
+    .reaction-btn:hover {
+      transform: scale(1.35);
+    }
+
+    .reaction-trigger-btn {
+      background: rgba(22, 25, 35, 0.9);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      color: #fff;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.15rem;
+      cursor: pointer;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+      transition: all 0.2s ease;
+    }
+
+    .reaction-trigger-btn:hover {
+      transform: scale(1.15);
+      border-color: var(--accent-discord);
+    }
+
+    .reaction-container {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      overflow: hidden;
+      z-index: 6;
+    }
+
+    .floating-emoji {
+      position: absolute;
+      bottom: 24px;
+      right: 64px;
+      font-size: 2.3rem;
+      animation: floatReaction 2.2s ease-out forwards;
+      pointer-events: none;
+    }
+
+    @keyframes floatReaction {
+      0% { transform: translateY(0) scale(0.6); opacity: 0; }
+      15% { opacity: 1; transform: translateY(-20px) scale(1.25); }
+      80% { opacity: 0.9; }
+      100% { transform: translateY(-260px) translateX(var(--drift, 0px)) scale(1.4); opacity: 0; }
+    }
+
+    /* Kick-style Stream Info Card below video */
+    .stream-info-card {
+      width: 100%;
+      max-width: 1360px;
+      margin-top: 14px;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 16px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .streamer-profile {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .streamer-avatar {
+      width: 46px;
+      height: 46px;
+      border-radius: 50%;
+      background: #252a38;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.35rem;
+      border: 2px solid var(--accent-discord);
+    }
+
+    .streamer-details {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+
+    .streamer-name-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .streamer-name-row h2 {
+      font-size: 1.05rem;
+      font-weight: 700;
+    }
+
+    .badge-live-pill {
+      background: var(--badge-bg);
+      color: var(--live-red);
+      border: 1px solid rgba(242, 63, 67, 0.4);
+      font-size: 0.72rem;
+      font-weight: 800;
+      padding: 2px 7px;
+      border-radius: 4px;
+      letter-spacing: 0.4px;
+    }
+
+    .stream-title {
+      font-size: 0.88rem;
+      color: var(--text-muted);
+    }
+
+    .unmute-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: var(--unmute-bg);
+      border: 1px solid var(--unmute-border);
+      color: var(--unmute-text);
+      font-size: 0.82rem;
+      font-weight: 600;
+      padding: 6px 14px;
+      border-radius: 20px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      user-select: none;
+    }
+
+    .unmute-badge.active-audio {
+      background: rgba(46, 204, 113, 0.15);
+      border-color: rgba(46, 204, 113, 0.4);
+      color: #2ecc71;
+    }
+
+    /* Keyboard Modal */
     .modal-overlay {
       position: fixed;
       inset: 0;
@@ -552,10 +729,6 @@
       cursor: pointer;
     }
 
-    .btn-close:hover {
-      color: #fff;
-    }
-
     .shortcut-row {
       display: flex;
       justify-content: space-between;
@@ -576,7 +749,7 @@
       color: #fff;
     }
 
-    /* Toast Notification */
+    /* Toast */
     .toast {
       position: fixed;
       bottom: 24px;
@@ -608,150 +781,183 @@
       display: none !important;
     }
 
-    @media (max-width: 680px) {
-      header { padding: 10px 14px; }
-      main { padding: 10px; }
-      .controls-bar {
-        flex-direction: column;
-        align-items: stretch;
+    @media (max-width: 860px) {
+      .sidebar {
+        position: fixed;
+        left: 0;
+        top: 53px;
+        bottom: 0;
+        box-shadow: 4px 0 16px rgba(0,0,0,0.5);
       }
-      .controls-left, .controls-right {
-        justify-content: center;
+      .sidebar.collapsed {
+        transform: translateX(-100%);
+        width: 240px;
+      }
+      .main-theater {
+        padding: 12px;
       }
       .volume-slider { width: 50px; }
-      .title-banner { font-size: 0.9rem; }
     }
   </style>
 </head>
 <body>
 
-  <!-- Top Header Banner -->
+  <!-- Top Compact Brand Bar -->
   <header>
     <div class="header-left">
-      <div class="live-badge">
+      <div class="brand-logo">
         <span class="live-dot"></span>
         <span>AO VIVO</span>
       </div>
-      <div class="title-banner">
-        <span>Transmissão de Tela</span>
-        <div class="streamer-pill" id="streamer-pill">
-          <span>👤</span>
-          <span id="streamer-name">Streamer</span>
-        </div>
-      </div>
+      <span style="color: var(--card-border-hover);">|</span>
+      <span style="font-size: 0.92rem; font-weight: 600;">Transmissão de Tela</span>
     </div>
     <div class="header-right">
-      <div id="unmute-badge" class="unmute-badge" title="Clique para alternar o áudio">
-        <span id="unmute-badge-icon">🔇</span>
-        <span id="unmute-badge-text">Clique para desmutar áudio</span>
-      </div>
+      <span style="font-size: 0.82rem; color: var(--text-muted);">Player 1080p 60fps</span>
     </div>
   </header>
 
-  <!-- Multi-view Bar (mostra quando há mais de 1 transmissão ativa) -->
-  <nav class="multiview-bar hidden" id="multiview-bar">
-    <span class="multiview-label">📡 Outras Transmissões:</span>
-    <div class="multiview-list" id="multiview-list"></div>
-  </nav>
-
-  <!-- Main Content / Player Area -->
-  <main>
-    <div class="player-wrapper">
-      <!-- Canvas de Luz Ambiente (Glow) -->
-      <canvas id="ambient-canvas" class="ambient-glow" width="32" height="18"></canvas>
-
-      <div class="player-container" id="player-container">
-        <video id="video" playsinline controls autoplay muted></video>
-
-        <!-- Stats for Nerds HUD -->
-        <div id="stats-overlay" class="stats-overlay hidden">
-          <div class="stats-row"><span class="stats-key">Resolução:</span><span class="stats-val" id="stat-res">1920x1080</span></div>
-          <div class="stats-row"><span class="stats-key">FPS:</span><span class="stats-val" id="stat-fps">60 FPS</span></div>
-          <div class="stats-row"><span class="stats-key">Bitrate:</span><span class="stats-val" id="stat-bitrate">--</span></div>
-          <div class="stats-row"><span class="stats-key">Latência HLS:</span><span class="stats-val" id="stat-latency">--</span></div>
-          <div class="stats-row"><span class="stats-key">Buffer:</span><span class="stats-val" id="stat-buffer">--</span></div>
-          <div class="stats-row"><span class="stats-key">Quadros Perdidos:</span><span class="stats-val" id="stat-dropped">0</span></div>
+  <!-- Kick-style Shell Layout -->
+  <div class="app-layout">
+    <!-- Left Sidebar: Lives Abertas -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <div class="sidebar-title">
+          <span class="live-dot"></span>
+          <span>Lives Abertas</span>
         </div>
+        <button class="btn-toggle-sidebar" id="btn-toggle-sidebar" title="Recolher / Expandir barra lateral">◀</button>
+      </div>
+      <div class="sidebar-channels" id="sidebar-channels">
+        <!-- Inserido dinamicamente -->
+      </div>
+    </aside>
 
-        <!-- Container de Emojis Flutuantes -->
-        <div id="reaction-container" class="reaction-container"></div>
+    <!-- Main Content Area -->
+    <div class="main-theater">
+      <div class="player-wrapper">
+        <!-- Philips Ambilight Glow Canvas -->
+        <canvas id="ambient-canvas" class="ambient-glow" width="48" height="27"></canvas>
 
-        <!-- Dock de Reações Rápidas -->
-        <div class="reaction-dock" id="reaction-dock" title="Reações ao vivo (Teclas 1 a 5)">
-          <button class="reaction-btn" data-emoji="🔥" title="Fogo! (Tecla 1)">🔥</button>
-          <button class="reaction-btn" data-emoji="💀" title="Caveira (Tecla 2)">💀</button>
-          <button class="reaction-btn" data-emoji="😂" title="Rindo (Tecla 3)">😂</button>
-          <button class="reaction-btn" data-emoji="👏" title="Palmas (Tecla 4)">👏</button>
-          <button class="reaction-btn" data-emoji="🎯" title="Na mosca! (Tecla 5)">🎯</button>
+        <div class="player-container" id="player-container">
+          <video id="video" playsinline controls autoplay muted></video>
+
+          <!-- Stats for Nerds HUD -->
+          <div id="stats-overlay" class="stats-overlay hidden">
+            <div class="stats-row"><span class="stats-key">Resolução:</span><span class="stats-val" id="stat-res">1920x1080</span></div>
+            <div class="stats-row"><span class="stats-key">FPS:</span><span class="stats-val" id="stat-fps">60 FPS</span></div>
+            <div class="stats-row"><span class="stats-key">Bitrate:</span><span class="stats-val" id="stat-bitrate">--</span></div>
+            <div class="stats-row"><span class="stats-key">Latência HLS:</span><span class="stats-val" id="stat-latency">--</span></div>
+            <div class="stats-row"><span class="stats-key">Buffer:</span><span class="stats-val" id="stat-buffer">--</span></div>
+            <div class="stats-row"><span class="stats-key">Quadros Perdidos:</span><span class="stats-val" id="stat-dropped">0</span></div>
+          </div>
+
+          <!-- Container de Emojis Flutuantes -->
+          <div id="reaction-container" class="reaction-container"></div>
+
+          <!-- Compact Expandable Reaction Dock -->
+          <div class="reaction-dock-wrapper" id="reaction-dock-wrapper">
+            <div class="reaction-menu" id="reaction-menu">
+              <button class="reaction-btn" data-emoji="🔥" title="Fogo! (Tecla 1)">🔥</button>
+              <button class="reaction-btn" data-emoji="💀" title="Caveira (Tecla 2)">💀</button>
+              <button class="reaction-btn" data-emoji="😂" title="Rindo (Tecla 3)">😂</button>
+              <button class="reaction-btn" data-emoji="👏" title="Palmas (Tecla 4)">👏</button>
+              <button class="reaction-btn" data-emoji="🎯" title="Na mosca! (Tecla 5)">🎯</button>
+            </div>
+            <button class="reaction-trigger-btn" id="btn-reaction-trigger" title="Reações ao vivo (Teclas 1 a 5)">
+              <span>🎉</span>
+            </button>
+          </div>
+
+          <!-- Loading Overlay -->
+          <div id="loading-overlay" class="overlay-message">
+            <div class="spinner"></div>
+            <div class="overlay-title">Conectando à transmissão...</div>
+            <div class="overlay-sub">Sincronizando sinal de vídeo em baixa latência (LL-HLS)</div>
+          </div>
+
+          <!-- Error Overlay -->
+          <div id="error-overlay" class="overlay-message hidden">
+            <div style="font-size: 2.5rem;">⚠️</div>
+            <div class="overlay-title" id="error-title">Sinal Interrompido</div>
+            <div class="overlay-sub" id="error-sub">Não foi possível carregar a transmissão. Aguardando novo sinal ou tentativa de reconexão...</div>
+            <div style="display: flex; gap: 10px; margin-top: 8px;">
+              <button class="btn btn-primary" id="btn-reconnect">🔄 Reconectar Agora</button>
+              <a class="btn" href="offline.html" id="btn-offline-link">Ver Status</a>
+            </div>
+          </div>
+
+          <!-- Kick-style Integrated On-Hover Controls Bar -->
+          <div class="player-controls-overlay" id="player-controls">
+            <div class="controls-left">
+              <div class="volume-group">
+                <button class="btn" id="btn-toggle-audio" title="Alternar Áudio (Tecla M)">
+                  <span id="audio-btn-icon">🔊</span>
+                  <span id="audio-btn-label">Desmutar Áudio</span>
+                </button>
+                <input type="range" class="volume-slider" id="volume-slider" min="0" max="1" step="0.05" value="1" title="Volume">
+              </div>
+
+              <button class="btn" id="btn-pip" title="Janela Flutuante (Tecla P)">
+                <span>🖼️</span>
+                <span>Janela Flutuante (PiP)</span>
+              </button>
+
+              <button class="btn" id="btn-fullscreen" title="Tela Cheia (Tecla F)">
+                <span>⛶</span>
+                <span>Tela Cheia</span>
+              </button>
+
+              <button class="btn btn-icon" id="btn-stats" title="Estatísticas Técnicas (Tecla S)">
+                <span>📊</span>
+                <span>Stats</span>
+              </button>
+
+              <button class="btn btn-icon" id="btn-ambient" title="Ambilight / Luz Ambiente (Tecla A)">
+                <span>✨</span>
+                <span>Glow</span>
+              </button>
+
+              <button class="btn btn-icon" id="btn-help" title="Atalhos de Teclado (Tecla ?)">
+                <span>⌨️</span>
+              </button>
+            </div>
+
+            <div class="controls-right">
+              <div class="stream-meta">
+                <span class="status-dot"></span>
+                <span class="live-tag">AO VIVO</span>
+                <span>•</span>
+                <span id="protocol-info">Low-Latency HLS</span>
+                <span>•</span>
+                <span id="resolution-info">1080p 60fps</span>
+              </div>
+            </div>
+          </div>
         </div>
+      </div>
 
-        <!-- Loading Overlay -->
-        <div id="loading-overlay" class="overlay-message">
-          <div class="spinner"></div>
-          <div class="overlay-title">Conectando à transmissão...</div>
-          <div class="overlay-sub">Sincronizando sinal de vídeo em baixa latência (LL-HLS)</div>
+      <!-- Kick-style Streamer Info Card below video -->
+      <div class="stream-info-card">
+        <div class="streamer-profile">
+          <div class="streamer-avatar">👤</div>
+          <div class="streamer-details">
+            <div class="streamer-name-row">
+              <h2 id="streamer-name">Streamer</h2>
+              <span class="badge-live-pill">AO VIVO</span>
+            </div>
+            <p class="stream-title">Transmissão de Tela</p>
+          </div>
         </div>
-
-        <!-- Error Overlay -->
-        <div id="error-overlay" class="overlay-message hidden">
-          <div style="font-size: 2.5rem;">⚠️</div>
-          <div class="overlay-title" id="error-title">Sinal Interrompido</div>
-          <div class="overlay-sub" id="error-sub">Não foi possível carregar a transmissão. Aguardando novo sinal ou tentativa de reconexão...</div>
-          <div style="display: flex; gap: 10px; margin-top: 8px;">
-            <button class="btn btn-primary" id="btn-reconnect">🔄 Reconectar Agora</button>
-            <a class="btn" href="offline.html" id="btn-offline-link">Ver Status</a>
+        <div class="stream-actions">
+          <div id="unmute-badge" class="unmute-badge" title="Clique para alternar o áudio">
+            <span id="unmute-badge-icon">🔇</span>
+            <span id="unmute-badge-text">Clique para desmutar áudio</span>
           </div>
         </div>
       </div>
     </div>
-
-    <!-- Actions & Controls Bar -->
-    <div class="controls-bar">
-      <div class="controls-left">
-        <!-- Grupo de Volume com Slider -->
-        <div class="volume-group">
-          <button class="btn" id="btn-toggle-audio" title="Alternar Áudio (Tecla M)">
-            <span id="audio-btn-icon">🔊</span>
-            <span id="audio-btn-label">Desmutar Áudio</span>
-          </button>
-          <input type="range" class="volume-slider" id="volume-slider" min="0" max="1" step="0.05" value="1" title="Volume">
-        </div>
-
-        <button class="btn" id="btn-pip" title="Janela Flutuante (Tecla P)">
-          <span>🖼️</span>
-          <span>Janela Flutuante (PiP)</span>
-        </button>
-
-        <button class="btn" id="btn-fullscreen" title="Tela Cheia (Tecla F)">
-          <span>⛶</span>
-          <span>Tela Cheia</span>
-        </button>
-
-        <button class="btn" id="btn-stats" title="Estatísticas Técnicas (Tecla S)">
-          <span>📊</span>
-          <span>Stats</span>
-        </button>
-
-        <button class="btn" id="btn-ambient" title="Modo Cinema com Luz Ambiente (Tecla A)">
-          <span>✨</span>
-          <span>Glow</span>
-        </button>
-
-        <button class="btn" id="btn-help" title="Atalhos de Teclado (Tecla ?)">
-          <span>⌨️</span>
-        </button>
-      </div>
-
-      <div class="controls-right">
-        <div class="stream-meta">
-          <span class="status-dot"></span>
-          <span id="protocol-info">Low-Latency HLS</span>
-          <span>•</span>
-          <span id="resolution-info">1080p 60fps</span>
-        </div>
-      </div>
-    </div>
-  </main>
+  </div>
 
   <!-- Modal de Ajuda com Atalhos de Teclado -->
   <div id="help-modal" class="modal-overlay hidden">
@@ -766,7 +972,7 @@
         <div class="shortcut-row"><span>Mutar / Desmutar Áudio</span><kbd>M</kbd></div>
         <div class="shortcut-row"><span>Aumentar / Diminuir Volume</span><span><kbd>↑</kbd> <kbd>↓</kbd></span></div>
         <div class="shortcut-row"><span>Estatísticas da Live (Stats)</span><kbd>S</kbd></div>
-        <div class="shortcut-row"><span>Luz Ambiente (Modo Cinema)</span><kbd>A</kbd></div>
+        <div class="shortcut-row"><span>Ambilight / Luz Ambiente (Glow)</span><kbd>A</kbd></div>
         <div class="shortcut-row"><span>Enviar Reações Rápidas</span><span><kbd>1</kbd> até <kbd>5</kbd></span></div>
         <div class="shortcut-row"><span>Abrir / Fechar esta ajuda</span><span><kbd>?</kbd> ou <kbd>H</kbd></span></div>
       </div>
@@ -783,6 +989,7 @@
     (function() {
       const video = document.getElementById('video');
       const playerContainer = document.getElementById('player-container');
+      const playerControls = document.getElementById('player-controls');
       const loadingOverlay = document.getElementById('loading-overlay');
       const errorOverlay = document.getElementById('error-overlay');
       const errorTitle = document.getElementById('error-title');
@@ -803,10 +1010,12 @@
       const helpModal = document.getElementById('help-modal');
       const statsOverlay = document.getElementById('stats-overlay');
       const ambientCanvas = document.getElementById('ambient-canvas');
-      const reactionDock = document.getElementById('reaction-dock');
+      const btnReactionTrigger = document.getElementById('btn-reaction-trigger');
+      const reactionMenu = document.getElementById('reaction-menu');
       const reactionContainer = document.getElementById('reaction-container');
-      const multiviewBar = document.getElementById('multiview-bar');
-      const multiviewList = document.getElementById('multiview-list');
+      const sidebar = document.getElementById('sidebar');
+      const btnToggleSidebar = document.getElementById('btn-toggle-sidebar');
+      const sidebarChannels = document.getElementById('sidebar-channels');
       const btnReconnect = document.getElementById('btn-reconnect');
       const streamerNameEl = document.getElementById('streamer-name');
       const resolutionInfo = document.getElementById('resolution-info');
@@ -826,6 +1035,7 @@
       let reconnectTimer = null;
       let toastTimer = null;
       let statsTimer = null;
+      let controlsTimeout = null;
       let ambientTimer = null;
       let ambientCtx = ambientCanvas.getContext('2d', { willReadFrequently: true });
       let ambientEnabled = localStorage.getItem('discord_ambient_glow') !== 'false';
@@ -944,6 +1154,25 @@
       btnFullscreen.addEventListener('click', toggleFullscreen);
       video.addEventListener('dblclick', toggleFullscreen);
 
+      // Integrated Controls On-Hover Management
+      function showControls() {
+        playerControls.classList.remove('fade-out');
+        if (controlsTimeout) clearTimeout(controlsTimeout);
+        controlsTimeout = setTimeout(() => {
+          if (!video.paused && !reactionMenu.classList.contains('expanded')) {
+            playerControls.classList.add('fade-out');
+          }
+        }, 2800);
+      }
+
+      playerContainer.addEventListener('mousemove', showControls);
+      playerContainer.addEventListener('mouseenter', showControls);
+      playerContainer.addEventListener('mouseleave', () => {
+        if (!video.paused && !reactionMenu.classList.contains('expanded')) {
+          playerControls.classList.add('fade-out');
+        }
+      });
+
       // Stats for Nerds
       function updateStats() {
         if (!statsEnabled) return;
@@ -984,11 +1213,11 @@
       }
       btnStats.addEventListener('click', toggleStats);
 
-      // Ambient Glow Mode
+      // Philips Ambilight Glow Mode
       function drawAmbient() {
         if (!ambientEnabled || video.paused || video.ended || !video.videoWidth) return;
         try {
-          ambientCtx.drawImage(video, 0, 0, 32, 18);
+          ambientCtx.drawImage(video, 0, 0, 48, 27);
         } catch (e) {}
       }
 
@@ -997,7 +1226,7 @@
         ambientCanvas.classList.toggle('hidden', !ambientEnabled);
         btnAmbient.classList.toggle('active', ambientEnabled);
         localStorage.setItem('discord_ambient_glow', ambientEnabled.toString());
-        showToast(ambientEnabled ? '✨ Luz Ambiente Ativada' : 'Luz Ambiente Desativada');
+        showToast(ambientEnabled ? '✨ Ambilight Glow Ativado' : 'Ambilight Glow Desativado');
       }
       btnAmbient.addEventListener('click', toggleAmbient);
       if (ambientEnabled) {
@@ -1006,9 +1235,21 @@
       } else {
         ambientCanvas.classList.add('hidden');
       }
-      ambientTimer = setInterval(drawAmbient, 100);
+      ambientTimer = setInterval(drawAmbient, 90);
 
-      // Reações Rápidas Flutuantes
+      // Compact Expandable Reaction Dock
+      btnReactionTrigger.addEventListener('click', (e) => {
+        e.stopPropagation();
+        reactionMenu.classList.toggle('expanded');
+        showControls();
+      });
+
+      document.addEventListener('click', (e) => {
+        if (!e.target.closest('#reaction-dock-wrapper')) {
+          reactionMenu.classList.remove('expanded');
+        }
+      });
+
       function triggerFloatingReaction(emoji) {
         const el = document.createElement('div');
         el.className = 'floating-emoji';
@@ -1018,7 +1259,6 @@
         reactionContainer.appendChild(el);
         setTimeout(() => el.remove(), 2400);
 
-        // Notifica o servidor para outros espectadores
         const parts = window.location.pathname.split('/');
         const streamKey = parts[parts.length - 1];
         if (streamKey) {
@@ -1030,14 +1270,15 @@
         }
       }
 
-      reactionDock.addEventListener('click', (e) => {
+      reactionMenu.addEventListener('click', (e) => {
         const btn = e.target.closest('.reaction-btn');
         if (btn && btn.dataset.emoji) {
           triggerFloatingReaction(btn.dataset.emoji);
+          reactionMenu.classList.remove('expanded');
         }
       });
 
-      // Conecta ao feed de reações via SSE
+      // Feed de reações via SSE
       try {
         const parts = window.location.pathname.split('/');
         const streamKey = parts[parts.length - 1];
@@ -1060,6 +1301,52 @@
         }
       } catch (e) {}
 
+      // Sidebar Toggle
+      btnToggleSidebar.addEventListener('click', () => {
+        sidebar.classList.toggle('collapsed');
+        btnToggleSidebar.textContent = sidebar.classList.contains('collapsed') ? '▶' : '◀';
+      });
+
+      // Multi-View: Atualiza sidebar com canais ao vivo
+      async function updateSidebarChannels() {
+        try {
+          const res = await fetch('/api/streams/active');
+          if (!res.ok) return;
+          const data = await res.json();
+          sidebarChannels.innerHTML = '';
+
+          const currentParts = window.location.pathname.split('/');
+          const currentId = currentParts[currentParts.length - 1];
+
+          if (data.streams && data.streams.length > 0) {
+            data.streams.forEach(s => {
+              const item = document.createElement('a');
+              item.className = `channel-item ${s.userId === currentId ? 'active' : ''}`;
+              item.href = s.watchUrl;
+              item.innerHTML = `
+                <div class="channel-avatar">
+                  <span>👤</span>
+                  <span class="avatar-live-indicator"></span>
+                </div>
+                <div class="channel-info">
+                  <div class="channel-name">${s.streamerName}</div>
+                  <div class="channel-call">Transmissão de Tela</div>
+                </div>
+              `;
+              sidebarChannels.appendChild(item);
+            });
+          } else {
+            sidebarChannels.innerHTML = `
+              <div style="padding: 12px 10px; font-size: 0.78rem; color: var(--text-muted); text-align: center;">
+                Nenhuma outra live ativa no momento.
+              </div>
+            `;
+          }
+        } catch (e) {}
+      }
+      updateSidebarChannels();
+      setInterval(updateSidebarChannels, 15000);
+
       // Atalhos de Teclado Gamers
       btnHelp.addEventListener('click', () => helpModal.classList.remove('hidden'));
       btnCloseHelp.addEventListener('click', () => helpModal.classList.add('hidden'));
@@ -1068,7 +1355,6 @@
       });
 
       document.addEventListener('keydown', (e) => {
-        // Ignora se estiver digitando em input
         if (['INPUT', 'TEXTAREA'].includes(document.activeElement?.tagName)) return;
 
         const key = e.key.toLowerCase();
@@ -1107,34 +1393,7 @@
         }
       });
 
-      // Multi-View: Atualiza lista de streams ativas
-      async function updateActiveStreams() {
-        try {
-          const res = await fetch('/api/streams/active');
-          if (!res.ok) return;
-          const data = await res.json();
-          if (data.streams && data.streams.length > 1) {
-            multiviewBar.classList.remove('hidden');
-            multiviewList.innerHTML = '';
-            const currentParts = window.location.pathname.split('/');
-            const currentId = currentParts[currentParts.length - 1];
-
-            data.streams.forEach(s => {
-              const a = document.createElement('a');
-              a.className = `multiview-btn ${s.userId === currentId ? 'active' : ''}`;
-              a.href = s.watchUrl;
-              a.innerHTML = `🔴 <b>${s.streamerName}</b>`;
-              multiviewList.appendChild(a);
-            });
-          } else {
-            multiviewBar.classList.add('hidden');
-          }
-        } catch (e) {}
-      }
-      updateActiveStreams();
-      setInterval(updateActiveStreams, 15000);
-
-      // Video Event Listeners for Loading States
+      // Video Event Listeners
       video.addEventListener('playing', () => {
         loadingOverlay.classList.add('hidden');
         errorOverlay.classList.add('hidden');
