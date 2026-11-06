@@ -200,6 +200,19 @@ async function startStreamSession(client, streamData) {
   if (channel) {
     channelId = channel.id;
 
+    const height = parseInt(streamData.height, 10) || 1080;
+    const fps = parseInt(streamData.fps, 10) || 60;
+    let qualityStr = `${height}p @ ${fps} FPS`;
+    if (height >= 2160) {
+      qualityStr = `4K @ ${fps} FPS (Ultra HD)`;
+    } else if (height >= 1440) {
+      qualityStr = `1440p @ ${fps} FPS (Quad HD)`;
+    } else if (height >= 1080) {
+      qualityStr = `1080p @ ${fps} FPS (Full HD)`;
+    } else if (height >= 720) {
+      qualityStr = `720p @ ${fps} FPS (HD)`;
+    }
+
     const publicEmbed = new EmbedBuilder()
       .setColor(0x5865F2)
       .setTitle('📺 Transmissão de Tela Ao Vivo')
@@ -211,12 +224,7 @@ async function startStreamSession(client, streamData) {
       .addFields(
         {
           name: '🖥️ Qualidade',
-          value: '`1080p @ 60 FPS (GPU NVENC/AMD)`',
-          inline: true
-        },
-        {
-          name: '⚡ Player Web',
-          value: '`Low-Latency HLS (~1.5s delay)`',
+          value: `\`${qualityStr}\``,
           inline: true
         },
         {
@@ -225,6 +233,7 @@ async function startStreamSession(client, streamData) {
           inline: true
         }
       )
+      .setImage(`${baseUrl}/api/stream/${userId}/thumbnail?t=${Date.now()}`)
       .setFooter({
         text: '💡 Dica: Abra o player para assistir em Tela Cheia ou Janela Flutuante (PiP).'
       })
@@ -374,9 +383,39 @@ async function endStreamSession(client, userId, options = {}) {
   return { success: true, activeStream: activeStream || null };
 }
 
+/**
+ * Atualiza a imagem de preview/print do anúncio da transmissão no Discord
+ * @param {import('discord.js').Client} client
+ * @param {string} userId
+ */
+async function updateStreamThumbnail(client, userId) {
+  const activeStream = streamStore.getStream(userId);
+  if (!activeStream || !activeStream.channelId || !activeStream.messageId) {
+    return;
+  }
+
+  try {
+    const channel = await client.channels.fetch(activeStream.channelId).catch(() => null);
+    if (!channel || !channel.messages) return;
+
+    const message = await channel.messages.fetch(activeStream.messageId).catch(() => null);
+    if (!message || !message.embeds || message.embeds.length === 0) return;
+
+    const baseUrl = (process.env.BASE_URL || 'http://localhost:3000').replace(/\/+$/, '');
+    const newImageUrl = `${baseUrl}/api/stream/${userId}/thumbnail?t=${Date.now()}`;
+
+    const updatedEmbed = EmbedBuilder.from(message.embeds[0]).setImage(newImageUrl);
+    await message.edit({ embeds: [updatedEmbed] });
+    console.log(`[StreamManager] Preview da stream de ${userId} atualizada no Discord.`);
+  } catch (err) {
+    console.warn(`[StreamManager] Falha ao atualizar preview da stream de ${userId}:`, err.message);
+  }
+}
+
 module.exports = {
   canManageMember,
   findAnnouncementChannel,
   startStreamSession,
-  endStreamSession
+  endStreamSession,
+  updateStreamThumbnail
 };

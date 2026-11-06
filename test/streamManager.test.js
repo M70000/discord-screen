@@ -3,7 +3,8 @@ const streamStore = require('../src/utils/streamStore');
 const {
   findAnnouncementChannel,
   startStreamSession,
-  endStreamSession
+  endStreamSession,
+  updateStreamThumbnail
 } = require('../src/utils/streamManager');
 
 console.log('=== TESTES DO STREAMMANAGER (TASK 4) ===\n');
@@ -22,8 +23,11 @@ function createMockClient() {
         id: `msg_${Date.now()}_${Math.random()}`,
         channelId: 'telamento_channel_123',
         payload,
+        embeds: payload.embeds || [],
+        components: payload.components || [],
         edit: async (newPayload) => {
           msg.payload = newPayload;
+          if (newPayload.embeds) msg.embeds = newPayload.embeds;
           editedMessages.push(msg);
           return msg;
         }
@@ -121,6 +125,17 @@ function createMockClient() {
   assert.strictEqual(client.editedMessages.length, 1);
   assert.strictEqual(client.mockMember.nickname, null, 'Apelido deveria ser restaurado');
   console.log('   [OK] Sessão encerrada, mensagem editada e apelido restaurado.');
+
+  // 4. Testando updateStreamThumbnail
+  console.log('\n4. Testando updateStreamThumbnail...');
+  streamStore.setStream('streamer_user_1', {
+    streamId: 'live_test_456',
+    channelId: 'telamento_channel_123',
+    messageId: client.sentMessages[0].id
+  });
+  await updateStreamThumbnail(client, 'streamer_user_1');
+  assert.strictEqual(client.editedMessages.length >= 2, true);
+  console.log('   [OK] updateStreamThumbnail editou a mensagem com sucesso.');
 
   console.log('\n=======================================');
   console.log('  TESTES DO STREAMMANAGER PASSARAM!     ');

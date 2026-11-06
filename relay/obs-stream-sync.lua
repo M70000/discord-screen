@@ -15,6 +15,7 @@ local sync_log_file = ""
 local tunnel_timer_active = false
 local attempts = 0
 local max_attempts = 20
+local is_streaming = false
 
 local function log_sync(msg)
     if sync_log_file ~= "" then
@@ -34,6 +35,56 @@ local function run_hidden(cmd)
     os.execute(ps_cmd)
 end
 
+-- Captura um frame da live e envia ao Bot para preview no Discord
+local function capture_and_upload_thumbnail()
+    if not is_streaming or discord_user_id == "" or bot_url == "" then
+        return
+    end
+
+    local clean_bot_url = bot_url:gsub("/+$", "")
+    local thumb_url = clean_bot_url .. "/api/stream/thumbnail"
+    local thumb_path = script_dir .. "preview.jpg"
+
+    local ps_script = string.format(
+        "$u = '%s'; $sec = '%s'; $tPath = '%s'; " ..
+        "if (Get-Command ffmpeg -ErrorAction SilentlyContinue) { try { & ffmpeg -y -i http://localhost:8888/live/live/index.m3u8 -vframes 1 -q:v 3 -vf scale=1280:720 $tPath -loglevel error } catch {} }; " ..
+        "if (-not (Test-Path $tPath) -or (Get-Item $tPath).Length -eq 0) { " ..
+        "    try { " ..
+        "        Add-Type -AssemblyName System.Windows.Forms,System.Drawing; " ..
+        "        $b = [System.Windows.Forms.Screen]::PrimaryScreen.Bounds; " ..
+        "        $sb = New-Object System.Drawing.Bitmap $b.Width, $b.Height; " ..
+        "        $g = [System.Drawing.Graphics]::FromImage($sb); " ..
+        "        $g.CopyFromScreen($b.Location, [System.Drawing.Point]::Empty, $b.Size); " ..
+        "        $th = New-Object System.Drawing.Bitmap 1280, 720; " ..
+        "        $tg = [System.Drawing.Graphics]::FromImage($th); " ..
+        "        $tg.InterpolationMode = [System.Drawing.Drawing2D.InterpolationMode]::HighQualityBilinear; " ..
+        "        $tg.DrawImage($sb, 0, 0, 1280, 720); " ..
+        "        $th.Save($tPath, [System.Drawing.Imaging.ImageFormat]::Jpeg); " ..
+        "        $g.Dispose(); $sb.Dispose(); $tg.Dispose(); $th.Dispose() " ..
+        "    } catch {} " ..
+        "}; " ..
+        "if (Test-Path $tPath) { " ..
+        "    try { " ..
+        "        $bytes = [System.IO.File]::ReadAllBytes($tPath); " ..
+        "        $b64 = [Convert]::ToBase64String($bytes); " ..
+        "        $body = @{ userId = $u; secret = $sec; imageBase64 = $b64 } | ConvertTo-Json -Compress; " ..
+        "        Invoke-RestMethod -Uri '%s' -Method Post -ContentType 'application/json' -Headers @{ 'X-Webhook-Secret' = $sec } -Body $body -TimeoutSec 15 " ..
+        "    } catch {} " ..
+        "}",
+        discord_user_id, webhook_secret, thumb_path, thumb_url
+    )
+
+    run_hidden(ps_script)
+end
+
+local function initial_thumb_capture()
+    obs.timer_remove(initial_thumb_capture)
+    if is_streaming then
+        log_sync("Capturando primeiro preview da transmissão para o Discord...")
+        capture_and_upload_thumbnail()
+    end
+end
+
 -- Envia requisição HTTP POST para o bot com autodetecção do path da stream
 local function send_start_webhook(tunnel_base_url)
     if discord_user_id == "" or bot_url == "" then
@@ -41,9 +92,23 @@ local function send_start_webhook(tunnel_base_url)
         return
     end
 
+    local width = 1920
+    local height = 1080
+    local fps = 60
+    if obs.obs_get_video_info then
+        local ovi = obs.obs_video_info()
+        if obs.obs_get_video_info(ovi) then
+            if ovi.output_width and ovi.output_width > 0 then width = ovi.output_width end
+            if ovi.output_height and ovi.output_height > 0 then height = ovi.output_height end
+            if ovi.fps_den and ovi.fps_den > 0 then
+                fps = math.floor((ovi.fps_num / ovi.fps_den) + 0.5)
+            end
+        end
+    end
+
     local clean_bot_url = bot_url:gsub("/+$", "")
     local full_url = clean_bot_url .. "/api/stream/start"
-    log_sync("Disparando webhook START para: " .. full_url .. " (Tunnel: " .. tunnel_base_url .. ")")
+    log_sync(string.format("Disparando webhook START para %s (%dx%d @ %d FPS, Tunnel: %s)", full_url, width, height, fps, tunnel_base_url))
 
     local ps_script = string.format(
         "$u = '%s'; $tUrl = '%s'; $sec = '%s'; " ..
@@ -53,12 +118,16 @@ local function send_start_webhook(tunnel_base_url)
         "    catch { try { $null = Invoke-WebRequest -Uri 'http://localhost:8888/live/index.m3u8' -Method Get -UseBasicParsing -TimeoutSec 2; $sub = 'live'; break } catch { Start-Sleep -Milliseconds 600 } } " ..
         "}; " ..
         "$finalUrl = $tUrl + '/' + $sub + '/index.m3u8'; " ..
-        "$body = @{ userId = $u; streamUrl = $finalUrl; secret = $sec } | ConvertTo-Json -Compress; " ..
+        "$body = @{ userId = $u; streamUrl = $finalUrl; secret = $sec; width = %d; height = %d; fps = %d } | ConvertTo-Json -Compress; " ..
         "try { $res = Invoke-RestMethod -Uri '%s' -Method Post -ContentType 'application/json' -Headers @{ 'X-Webhook-Secret' = $sec } -Body $body -TimeoutSec 10; Add-Content -Path '%s' -Value ('[Webhook Start OK] ' + ($res | ConvertTo-Json -Compress)) } catch { Add-Content -Path '%s' -Value ('[Webhook Start ERRO] ' + $_.Exception.Message) }",
-        discord_user_id, tunnel_base_url, webhook_secret, full_url, sync_log_file, sync_log_file
+        discord_user_id, tunnel_base_url, webhook_secret, width, height, fps, full_url, sync_log_file, sync_log_file
     )
 
     run_hidden(ps_script)
+
+    -- Agenda a captura da primeira thumbnail após 10 segundos e depois a cada 180 segundos (3 min)
+    obs.timer_add(initial_thumb_capture, 10 * 1000)
+    obs.timer_add(capture_and_upload_thumbnail, 180 * 1000)
 end
 
 -- Envia requisição HTTP POST simples (para stop)
@@ -157,14 +226,18 @@ end
 local function on_event(event)
     if event == obs.OBS_FRONTEND_EVENT_STREAMING_STARTED then
         log_sync("Evento detectado: STREAMING_STARTED (Iniciar Transmissao)")
+        is_streaming = true
         start_mediamtx()
         start_tunnel()
     elseif event == obs.OBS_FRONTEND_EVENT_STREAMING_STOPPED then
         log_sync("Evento detectado: STREAMING_STOPPED (Interromper Transmissao)")
+        is_streaming = false
         if tunnel_timer_active then
             obs.timer_remove(check_tunnel_ready)
             tunnel_timer_active = false
         end
+        obs.timer_remove(initial_thumb_capture)
+        obs.timer_remove(capture_and_upload_thumbnail)
         run_hidden("Stop-Process -Name 'cloudflared' -Force -ErrorAction SilentlyContinue")
         send_stop_webhook()
     end
@@ -231,9 +304,12 @@ function script_load(settings)
 end
 
 function script_unload()
+    is_streaming = false
     if tunnel_timer_active then
         obs.timer_remove(check_tunnel_ready)
     end
+    obs.timer_remove(initial_thumb_capture)
+    obs.timer_remove(capture_and_upload_thumbnail)
     stop_all_processes()
     print("[OBS Sync] Script descarregado. Processos encerrados.")
 end

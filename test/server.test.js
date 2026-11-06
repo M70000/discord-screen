@@ -133,6 +133,25 @@ async function makeRequest(port, options, bodyData) {
     assert.strictEqual(reactRes.json.emoji, '🔥');
     console.log('   [OK] /api/stream/:id/react respondeu 200 com sucesso.');
 
+    // 8. Testando upload e recuperação de thumbnail
+    console.log('\n8. Testando POST e GET de thumbnail...');
+    const fakeImageB64 = Buffer.from('fake-image-bytes').toString('base64');
+    const thumbPostRes = await makeRequest(TEST_PORT, {
+      path: '/api/stream/thumbnail',
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-Webhook-Secret': TEST_SECRET }
+    }, { userId: 'user_1', imageBase64: fakeImageB64 });
+    assert.strictEqual(thumbPostRes.statusCode, 200);
+    assert.strictEqual(thumbPostRes.json.success, true);
+
+    const thumbGetRes = await makeRequest(TEST_PORT, {
+      path: '/api/stream/user_1/thumbnail',
+      method: 'GET'
+    });
+    assert.strictEqual(thumbGetRes.statusCode, 200);
+    assert.strictEqual(thumbGetRes.body, 'fake-image-bytes');
+    console.log('   [OK] Upload e recuperação de thumbnail funcionando.');
+
     console.log('\n=======================================');
     console.log('  TODOS OS TESTES DO SERVIDOR PASSARAM! ');
     console.log('========================================\n');

@@ -96,6 +96,7 @@ function createServerInstance(options = {}) {
   const secret = options.secret || process.env.OBS_WEBHOOK_SECRET;
   const onStreamStart = options.onStreamStart || (async () => {});
   const onStreamStop = options.onStreamStop || (async () => {});
+  const onThumbnailUpdate = options.onThumbnailUpdate || (async () => {});
 
   const publicDir = path.join(__dirname, 'public');
   const reactionSubscribers = new Map();
@@ -156,7 +157,11 @@ function createServerInstance(options = {}) {
         const result = await onStreamStart({
           userId,
           streamUrl,
-          streamId: finalStreamId
+          streamId: finalStreamId,
+          width: body.width,
+          height: body.height,
+          fps: body.fps,
+          quality: body.quality
         });
         return sendJson(res, 200, {
           success: true,
@@ -195,6 +200,61 @@ function createServerInstance(options = {}) {
         console.error('[HTTP API] Erro ao processar /api/stream/stop:', err);
         return sendJson(res, 500, { error: err.message || 'Erro interno ao encerrar stream' });
       }
+    }
+
+    // 4. Webhook: Atualização de Thumbnail / Frame da Live
+    if (method === 'POST' && (pathname === '/api/stream/thumbnail' || pathname.endsWith('/thumbnail'))) {
+      let body;
+      try {
+        body = await parseRequestBody(req);
+      } catch (err) {
+        return sendJson(res, 400, { error: err.message });
+      }
+
+      if (!isAuthorized(req, body, secret)) {
+        return sendJson(res, 401, { error: 'Unauthorized: Secret inválido ou ausente' });
+      }
+
+      const { userId, imageBase64 } = body;
+      if (!userId || !imageBase64) {
+        return sendJson(res, 400, { error: 'Campos "userId" e "imageBase64" são obrigatórios' });
+      }
+
+      try {
+        const buffer = Buffer.from(imageBase64, 'base64');
+        streamStore.setThumbnail(userId, buffer);
+        await onThumbnailUpdate({ userId });
+        return sendJson(res, 200, { success: true, size: buffer.length });
+      } catch (err) {
+        console.error('[HTTP API] Erro ao processar thumbnail:', err);
+        return sendJson(res, 500, { error: err.message });
+      }
+    }
+
+    // 5. Servir Thumbnail / Frame da Live
+    if (method === 'GET' && pathname.startsWith('/api/stream/') && pathname.endsWith('/thumbnail')) {
+      const parts = pathname.split('/');
+      const streamUserId = parts[3];
+      const buffer = streamStore.getThumbnail(streamUserId);
+
+      if (buffer) {
+        res.setHeader('Content-Type', 'image/jpeg');
+        res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+        res.setHeader('Pragma', 'no-cache');
+        res.setHeader('Expires', '0');
+        return res.writeHead(200).end(buffer);
+      }
+
+      // Placeholder SVG estilizado se ainda não tiver recebido o primeiro frame
+      res.setHeader('Content-Type', 'image/svg+xml');
+      res.setHeader('Cache-Control', 'no-cache');
+      const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720">
+        <rect width="100%" height="100%" fill="#141720"/>
+        <circle cx="640" cy="360" r="70" fill="#1c202d" stroke="#5865f2" stroke-width="4"/>
+        <text x="640" y="375" fill="#f2f3f5" font-family="system-ui, sans-serif" font-size="36" text-anchor="middle" font-weight="bold">🔴 AO VIVO</text>
+        <text x="640" y="470" fill="#949ba4" font-family="system-ui, sans-serif" font-size="20" text-anchor="middle">Transmissão em andamento</text>
+      </svg>`;
+      return res.writeHead(200).end(svg);
     }
 
     // 4. Download do instalador e pacote do Relay

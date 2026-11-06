@@ -9,7 +9,7 @@ const {
   Options
 } = require('discord.js');
 const { startServer } = require('./server');
-const { startStreamSession, endStreamSession } = require('./utils/streamManager');
+const { startStreamSession, endStreamSession, updateStreamThumbnail } = require('./utils/streamManager');
 const streamStore = require('./utils/streamStore');
 
 // 1. Verificacao inicial de variaveis de ambiente
@@ -152,6 +152,9 @@ startServer({
   },
   onStreamStop: async (payload) => {
     return await endStreamSession(client, payload.userId, { reason: 'manual' });
+  },
+  onThumbnailUpdate: async ({ userId }) => {
+    return await updateStreamThumbnail(client, userId);
   }
 }).catch(err => {
   console.error('[HTTP Server] Falha ao iniciar servidor HTTP:', err);

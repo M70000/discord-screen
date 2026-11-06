@@ -7,6 +7,7 @@ class StreamStore {
     this.activeStreams = new Map(); // userId -> streamData
     this.streamsById = new Map();   // streamId -> streamData
     this.preferredChannels = new Map(); // userId -> { channelId, timestamp }
+    this.thumbnails = new Map(); // userId -> { buffer, updatedAt }
   }
 
   /**
@@ -93,6 +94,25 @@ class StreamStore {
   }
 
   /**
+   * Salva ou atualiza a thumbnail/preview de uma live.
+   * @param {string} userId
+   * @param {Buffer} buffer
+   */
+  setThumbnail(userId, buffer) {
+    this.thumbnails.set(userId, { buffer, updatedAt: Date.now() });
+  }
+
+  /**
+   * Retorna o buffer da thumbnail de um usuário.
+   * @param {string} userId
+   * @returns {Buffer|null}
+   */
+  getThumbnail(userId) {
+    const entry = this.thumbnails.get(userId);
+    return entry ? entry.buffer : null;
+  }
+
+  /**
    * Remove a stream ativa de um usuário.
    * @param {string} userId ID do transmissor
    * @returns {boolean}
@@ -106,6 +126,7 @@ class StreamStore {
     if (stream.streamId) {
       this.streamsById.delete(stream.streamId);
     }
+    this.thumbnails.delete(userId);
     return this.activeStreams.delete(userId);
   }
 
@@ -145,6 +166,7 @@ class StreamStore {
   clear() {
     this.activeStreams.clear();
     this.streamsById.clear();
+    this.thumbnails.clear();
   }
 }
 
