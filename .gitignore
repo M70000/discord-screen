@@ -8,6 +8,7 @@ yarn-error.log*
 upload.zip
 .agents/
 *.exe
+!relay/Instalador-Discord-Relay.exe
 *.zip
 !relay.zip
 relay/cloudflared.log

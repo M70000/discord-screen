@@ -76,6 +76,7 @@ module.exports = {
     // Cenário 2: Usuário offline (não iniciou o OBS ainda)
     const baseUrl = (process.env.BASE_URL || 'http://localhost:3000').replace(/\/+$/, '');
     const downloadZipUrl = `${baseUrl}/download/relay.zip`;
+    const downloadExeUrl = `${baseUrl}/download/installer.exe`;
     const downloadBatUrl = `${baseUrl}/download/install-relay.bat`;
 
     const guideEmbed = new EmbedBuilder()
@@ -84,31 +85,32 @@ module.exports = {
       .setDescription([
         'Nenhuma transmissão de tela foi detectada para você no momento.',
         '',
-        '### 🚀 Passo a Passo Rápido:',
-        `1. Baixe o pacote completo: **[📥 Baixar Pacote (relay.zip)](${downloadZipUrl})**`,
-        '   • Extraia a pasta e execute **`install-relay.bat`** *(baixa os arquivos em segundos)*.',
-        '2. No OBS Studio, abra o menu superior **Ferramentas > Scripts** e adicione o arquivo **`obs-stream-sync.lua`**.',
-        '3. Nas opções do script, preencha apenas:',
-        `   • **ID do Discord:** \`${userId}\``,
-        '   • *(A URL do Bot e a Chave Secreta já vêm 100% pré-configuradas!)*',
-        '4. Em **Configurações > Transmissão** no OBS, use:',
-        '   • **Serviço:** Personalizado...',
-        '   • **Servidor:** `rtmp://localhost:1935/live`',
-        '   • **Chave de transmissão:** `live`',
+        '### 🚀 Instalação Rápida em 1 Clique:',
+        `1. Baixe o pacote: **[📥 Baixar Pacote (relay.zip)](${downloadZipUrl})** ou o **[⚡ Instalador Direto (.EXE)](${downloadExeUrl})**`,
+        '2. Execute o **`Instalador-Discord-Relay.exe`** (ou `install-relay.bat`):',
+        '   • Se você não tiver o OBS, ele baixa e instala o OBS Studio oficial mais recente!',
+        '   • Instala o script direto na pasta de scripts do OBS.',
+        '   • Configura automaticamente o servidor: `rtmp://localhost:1935/live` e chave: `live`!',
+        '   • Digite seu ID do Discord quando o instalador pedir.',
+        '3. Abra o OBS Studio, adicione seu jogo/tela nas Fontes e clique em **"Iniciar Transmissão"**!',
         '',
-        '👉 **Pronto!** Agora basta clicar em **"Iniciar Transmissão"** no OBS. O bot anunciará sua live automaticamente no canal **#telamento**!'
+        '👉 **Pronto!** O bot avisa a galera no canal **#telamento** com resolução real e preview da live!'
       ].join('\n'))
       .setFooter({
-        text: '🔒 Zero janelas extras. O OBS liga e desliga o relay automaticamente.'
+        text: '🔒 Zero complicação. O instalador configura tudo no seu computador sozinho.'
       });
 
     const guideRow = new ActionRowBuilder().addComponents(
       new ButtonBuilder()
-        .setLabel('📥 Baixar Pacote do Relay (.ZIP)')
+        .setLabel('📥 Baixar Pacote (.ZIP)')
         .setStyle(ButtonStyle.Link)
         .setURL(downloadZipUrl),
       new ButtonBuilder()
-        .setLabel('⚡ Baixar Instalador (.BAT)')
+        .setLabel('⚡ Baixar Instalador (.EXE)')
+        .setStyle(ButtonStyle.Link)
+        .setURL(downloadExeUrl),
+      new ButtonBuilder()
+        .setLabel('📜 Script (.BAT)')
         .setStyle(ButtonStyle.Link)
         .setURL(downloadBatUrl)
     );

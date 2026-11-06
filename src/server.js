@@ -258,6 +258,15 @@ function createServerInstance(options = {}) {
     }
 
     // 4. Download do instalador e pacote do Relay
+    if (method === 'GET' && (pathname === '/download/installer.exe' || pathname === '/download/instalador.exe')) {
+      const exePath = path.join(__dirname, '..', 'relay', 'Instalador-Discord-Relay.exe');
+      if (fs.existsSync(exePath)) {
+        res.setHeader('Content-Disposition', 'attachment; filename="Instalador-Discord-Relay.exe"');
+        res.setHeader('Content-Type', 'application/octet-stream');
+        return res.writeHead(200).end(fs.readFileSync(exePath));
+      }
+    }
+
     if (method === 'GET' && (pathname === '/download/relay.zip' || pathname === '/download/installer.zip')) {
       const zipPath = path.join(__dirname, '..', 'relay.zip');
       if (fs.existsSync(zipPath)) {
