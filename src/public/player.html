@@ -234,38 +234,6 @@
       max-width: 420px;
     }
 
-    /* Floating Unmute Click Banner */
-    .click-unmute-overlay {
-      position: absolute;
-      top: 20px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: rgba(20, 23, 32, 0.92);
-      border: 1px solid var(--unmute-border);
-      color: var(--unmute-text);
-      padding: 8px 18px;
-      border-radius: 30px;
-      font-size: 0.88rem;
-      font-weight: 600;
-      cursor: pointer;
-      z-index: 6;
-      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      transition: all 0.2s ease;
-      animation: bouncePrompt 2s infinite ease-in-out;
-    }
-
-    .click-unmute-overlay:hover {
-      background: rgba(240, 178, 50, 0.25);
-    }
-
-    @keyframes bouncePrompt {
-      0%, 100% { transform: translate(-50%, 0); }
-      50% { transform: translate(-50%, -4px); }
-    }
-
     /* Action Controls Bar */
     .controls-bar {
       width: 100%;
@@ -435,12 +403,6 @@
           <a class="btn" href="offline.html" id="btn-offline-link">Ver Status</a>
         </div>
       </div>
-
-      <!-- Quick Unmute Floating Prompt over video -->
-      <div id="floating-unmute" class="click-unmute-overlay">
-        <span>🔊</span>
-        <span>Vídeo mutado automaticamente pelo navegador. Clique para ouvir!</span>
-      </div>
     </div>
 
     <!-- Actions & Controls Bar -->
@@ -485,7 +447,6 @@
       const errorOverlay = document.getElementById('error-overlay');
       const errorTitle = document.getElementById('error-title');
       const errorSub = document.getElementById('error-sub');
-      const floatingUnmute = document.getElementById('floating-unmute');
       const unmuteBadge = document.getElementById('unmute-badge');
       const unmuteBadgeIcon = document.getElementById('unmute-badge-icon');
       const unmuteBadgeText = document.getElementById('unmute-badge-text');
@@ -530,14 +491,12 @@
           unmuteBadgeText.textContent = 'Clique para desmutar áudio';
           audioBtnIcon.textContent = '🔊';
           audioBtnLabel.textContent = 'Desmutar Áudio';
-          floatingUnmute.style.display = 'flex';
         } else {
           unmuteBadge.classList.add('active-audio');
           unmuteBadgeIcon.textContent = '🔊';
           unmuteBadgeText.textContent = 'Áudio Ativado';
           audioBtnIcon.textContent = '🔇';
           audioBtnLabel.textContent = 'Mutar Áudio';
-          floatingUnmute.style.display = 'none';
         }
       }
 
@@ -557,7 +516,6 @@
 
       unmuteBadge.addEventListener('click', toggleAudio);
       btnToggleAudio.addEventListener('click', toggleAudio);
-      floatingUnmute.addEventListener('click', toggleAudio);
 
       video.addEventListener('volumechange', () => {
         updateAudioState(video.muted || video.volume === 0);

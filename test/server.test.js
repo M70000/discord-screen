@@ -51,12 +51,20 @@ async function makeRequest(port, options, bodyData) {
   await new Promise((resolve) => server.listen(TEST_PORT, resolve));
 
   try {
-    // 1. Health check
-    console.log('1. Testando /health...');
+    // 1. Health check & Ping
+    console.log('1. Testando /health e /healthz...');
     const health = await makeRequest(TEST_PORT, { path: '/health', method: 'GET' });
     assert.strictEqual(health.statusCode, 200);
     assert.strictEqual(health.json.status, 'ok');
-    console.log('   [OK] /health respondeu 200.');
+
+    const healthz = await makeRequest(TEST_PORT, { path: '/healthz', method: 'GET' });
+    assert.strictEqual(healthz.statusCode, 200);
+    assert.strictEqual(healthz.json.status, 'ok');
+
+    const ping = await makeRequest(TEST_PORT, { path: '/ping', method: 'GET' });
+    assert.strictEqual(ping.statusCode, 200);
+    assert.strictEqual(ping.json.status, 'ok');
+    console.log('   [OK] /health, /healthz e /ping responderam 200.');
 
     // 2. Autenticação 401 Unauthorized
     console.log('\n2. Testando autenticação com secret inválido...');

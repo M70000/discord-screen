@@ -114,9 +114,22 @@ function createServerInstance(options = {}) {
       return res.end();
     }
 
-    // 1. Health check
-    if (method === 'GET' && (pathname === '/health' || pathname === '/api/health')) {
-      return sendJson(res, 200, { status: 'ok', uptime: process.uptime() });
+    // 1. Health check & Ping (suporta /health, /healthz, /ping, /api/health e /)
+    if (method === 'GET' && (
+      pathname === '/health' ||
+      pathname === '/healthz' ||
+      pathname === '/ping' ||
+      pathname === '/api/health' ||
+      pathname === '/api/healthz' ||
+      pathname === '/'
+    )) {
+      return sendJson(res, 200, {
+        status: 'ok',
+        service: 'discord-screen-relay',
+        uptime: Math.floor(process.uptime()),
+        timestamp: new Date().toISOString(),
+        activeStreams: streamStore.getAllStreams().length
+      });
     }
 
     // 2. Webhook: Início de Stream
