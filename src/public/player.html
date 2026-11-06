@@ -505,15 +505,26 @@
     .live-indicator-badge {
       display: inline-flex;
       align-items: center;
-      gap: 6px;
-      background: rgba(242, 63, 67, 0.18);
-      border: 1px solid rgba(242, 63, 67, 0.4);
+      gap: 5px;
+      background: rgba(242, 63, 67, 0.16);
+      border: 1px solid rgba(242, 63, 67, 0.35);
       color: var(--live-red);
-      font-size: 0.75rem;
+      font-size: 0.72rem;
       font-weight: 800;
-      padding: 4px 9px;
-      border-radius: 6px;
-      letter-spacing: 0.5px;
+      padding: 3px 7px;
+      border-radius: 5px;
+      letter-spacing: 0.3px;
+    }
+
+    .res-mini-tag {
+      background: rgba(0, 0, 0, 0.35);
+      color: #e1e4ea;
+      font-size: 0.68rem;
+      padding: 1px 5px;
+      border-radius: 3px;
+      font-family: monospace;
+      font-weight: 600;
+      margin-left: 2px;
     }
 
     .live-timer {
@@ -1056,6 +1067,7 @@
               <div class="live-indicator-badge">
                 <span class="live-dot"></span>
                 <span>AO VIVO</span>
+                <span class="res-mini-tag" id="res-mini-tag">1080p60</span>
               </div>
               <span class="live-timer" id="live-timer">00:00</span>
             </div>
@@ -1469,35 +1481,103 @@
         }
       });
 
+      let selectedQuality = 'auto';
+
+      function detectAndApplyResolution() {
+        if (!video.videoWidth || !video.videoHeight) return;
+        const w = video.videoWidth;
+        const h = video.videoHeight;
+        let tag = '1080p60';
+        if (h >= 2160) tag = '4K 60fps';
+        else if (h >= 1440) tag = '1440p60';
+        else if (h >= 1080) tag = '1080p60';
+        else if (h >= 720) tag = '720p60';
+        else tag = `${h}p`;
+
+        const resMiniTag = document.getElementById('res-mini-tag');
+        if (resMiniTag) resMiniTag.textContent = tag;
+
+        const headerStreamer = document.getElementById('header-streamer');
+        if (headerStreamer) headerStreamer.textContent = `${tag} • LL-HLS`;
+
+        if (statRes) statRes.textContent = `${w}x${h}`;
+        buildQualityMenu();
+      }
+
       function buildQualityMenu() {
-        if (!hlsInstance) return;
+        if (!qualityOptions) return;
         qualityOptions.innerHTML = '';
 
-        // Opção Auto
+        const width = video.videoWidth || 1920;
+        const height = video.videoHeight || 1080;
+
+        let nativeLabel = '1080p60';
+        if (height >= 2160) nativeLabel = '4K 60fps';
+        else if (height >= 1440) nativeLabel = '1440p60 (Quad HD)';
+        else if (height >= 1080) nativeLabel = '1080p60';
+        else if (height >= 720) nativeLabel = '720p60';
+
+        // 1. Opção Auto (Padrão: Maior Qualidade disponível)
         const autoBtn = document.createElement('button');
-        autoBtn.className = `quality-item ${hlsInstance.currentLevel === -1 ? 'active' : ''}`;
-        autoBtn.innerHTML = `<span>Auto</span><span>${hlsInstance.currentLevel === -1 ? '✓' : ''}</span>`;
+        autoBtn.className = `quality-item ${selectedQuality === 'auto' ? 'active' : ''}`;
+        autoBtn.innerHTML = `<span>Auto (Maior Qualidade)</span><span>${selectedQuality === 'auto' ? '✓' : ''}</span>`;
         autoBtn.onclick = () => {
-          hlsInstance.currentLevel = -1;
+          selectedQuality = 'auto';
+          if (hlsInstance) hlsInstance.currentLevel = -1;
           buildQualityMenu();
           qualityDropdown.classList.remove('show');
-          showToast('Qualidade: Automática');
+          showToast(`Qualidade: Auto (${nativeLabel})`);
         };
         qualityOptions.appendChild(autoBtn);
 
-        // Níveis reais do Hls.js
-        if (hlsInstance.levels && hlsInstance.levels.length > 0) {
+        // 2. Níveis reais detectados no Hls.js se existirem
+        if (hlsInstance && hlsInstance.levels && hlsInstance.levels.length > 1) {
           hlsInstance.levels.forEach((level, idx) => {
             const btn = document.createElement('button');
-            const isActive = hlsInstance.currentLevel === idx;
+            const isActive = selectedQuality === `level_${idx}` || (selectedQuality === 'auto' && hlsInstance.currentLevel === idx);
             btn.className = `quality-item ${isActive ? 'active' : ''}`;
             const label = level.height ? `${level.height}p60` : `Nível ${idx + 1}`;
             btn.innerHTML = `<span>${label}</span><span>${isActive ? '✓' : ''}</span>`;
             btn.onclick = () => {
+              selectedQuality = `level_${idx}`;
               hlsInstance.currentLevel = idx;
               buildQualityMenu();
               qualityDropdown.classList.remove('show');
               showToast(`Qualidade: ${label}`);
+            };
+            qualityOptions.appendChild(btn);
+          });
+        } else {
+          // 3. Opção Fonte Máxima Nativa (ex: 1440p60 Quad HD ou 1080p60)
+          const sourceBtn = document.createElement('button');
+          sourceBtn.className = `quality-item ${selectedQuality === 'source' ? 'active' : ''}`;
+          sourceBtn.innerHTML = `<span>${nativeLabel} • Fonte</span><span>${selectedQuality === 'source' ? '✓' : ''}</span>`;
+          sourceBtn.onclick = () => {
+            selectedQuality = 'source';
+            if (hlsInstance) hlsInstance.currentLevel = -1;
+            buildQualityMenu();
+            qualityDropdown.classList.remove('show');
+            showToast(`Qualidade: ${nativeLabel} (Fonte Máxima)`);
+          };
+          qualityOptions.appendChild(sourceBtn);
+
+          // Opções menores para conexões mais lentas
+          const lowerRes = [
+            { label: '1080p60', h: 1080 },
+            { label: '720p60', h: 720 },
+            { label: '480p', h: 480 },
+            { label: '360p', h: 360 }
+          ].filter(r => r.h < height);
+
+          lowerRes.forEach(r => {
+            const btn = document.createElement('button');
+            btn.className = `quality-item ${selectedQuality === r.label ? 'active' : ''}`;
+            btn.innerHTML = `<span>${r.label}</span><span>${selectedQuality === r.label ? '✓' : ''}</span>`;
+            btn.onclick = () => {
+              selectedQuality = r.label;
+              buildQualityMenu();
+              qualityDropdown.classList.remove('show');
+              showToast(`Qualidade definida para: ${r.label}`);
             };
             qualityOptions.appendChild(btn);
           });
@@ -1672,7 +1752,9 @@
       });
 
       // Video Event Listeners
+      video.addEventListener('loadedmetadata', detectAndApplyResolution);
       video.addEventListener('playing', () => {
+        detectAndApplyResolution();
         loadingOverlay.classList.add('hidden');
         errorOverlay.classList.add('hidden');
         reconnectAttempts = 0;
