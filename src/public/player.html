@@ -276,6 +276,83 @@
       max-width: 100%;
     }
 
+    .player-grid {
+      display: flex;
+      width: 100%;
+      gap: 16px;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.25s ease;
+      position: relative;
+      z-index: 1;
+    }
+
+    .player-grid.dual-view {
+      max-width: 1680px;
+    }
+
+    .player-grid.dual-view .player-container {
+      flex: 1 1 0px;
+      min-width: 0;
+    }
+
+    .split-player {
+      border: 1px solid var(--accent-discord);
+      position: relative;
+    }
+
+    .split-header {
+      position: absolute;
+      top: 12px;
+      left: 12px;
+      right: 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      z-index: 5;
+    }
+
+    .split-streamer-name {
+      background: rgba(14, 16, 22, 0.88);
+      backdrop-filter: blur(8px);
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: #fff;
+      border: 1px solid var(--card-border);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .split-controls {
+      display: flex;
+      gap: 6px;
+    }
+
+    .btn-icon-sm {
+      background: rgba(20, 23, 32, 0.88);
+      backdrop-filter: blur(8px);
+      border: 1px solid var(--card-border-hover);
+      color: #fff;
+      width: 30px;
+      height: 30px;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 0.82rem;
+      transition: all 0.15s ease;
+    }
+
+    .btn-icon-sm:hover {
+      background: var(--accent-discord);
+      border-color: var(--accent-discord);
+      transform: scale(1.08);
+    }
+
     /* Philips Ambilight Inspired Glow */
     .ambient-glow {
       position: absolute;
@@ -1003,118 +1080,143 @@
         <!-- Philips Ambilight Glow Canvas -->
         <canvas id="ambient-canvas" class="ambient-glow" width="48" height="27"></canvas>
 
-        <div class="player-container" id="player-container">
-          <video id="video" playsinline controls autoplay muted></video>
+        <div class="player-grid" id="player-grid">
+          <div class="player-container" id="player-container">
+            <video id="video" playsinline controls autoplay muted></video>
 
-          <!-- Stats for Nerds HUD -->
-          <div id="stats-overlay" class="stats-overlay hidden">
-            <div class="stats-row"><span class="stats-key">Resolução:</span><span class="stats-val" id="stat-res">1920x1080</span></div>
-            <div class="stats-row"><span class="stats-key">FPS:</span><span class="stats-val" id="stat-fps">60 FPS</span></div>
-            <div class="stats-row"><span class="stats-key">Bitrate:</span><span class="stats-val" id="stat-bitrate">--</span></div>
-            <div class="stats-row"><span class="stats-key">Latência HLS:</span><span class="stats-val" id="stat-latency">--</span></div>
-            <div class="stats-row"><span class="stats-key">Buffer:</span><span class="stats-val" id="stat-buffer">--</span></div>
-            <div class="stats-row"><span class="stats-key">Quadros Perdidos:</span><span class="stats-val" id="stat-dropped">0</span></div>
-          </div>
-
-          <!-- Container de Emojis Flutuantes -->
-          <div id="reaction-container" class="reaction-container"></div>
-
-          <!-- Compact Expandable Reaction Dock -->
-          <div class="reaction-dock-wrapper" id="reaction-dock-wrapper">
-            <div class="reaction-menu" id="reaction-menu">
-              <button class="reaction-btn" data-emoji="🔥" title="Fogo! (Tecla 1)">🔥</button>
-              <button class="reaction-btn" data-emoji="💀" title="Caveira (Tecla 2)">💀</button>
-              <button class="reaction-btn" data-emoji="😂" title="Rindo (Tecla 3)">😂</button>
-              <button class="reaction-btn" data-emoji="👏" title="Palmas (Tecla 4)">👏</button>
-              <button class="reaction-btn" data-emoji="🎯" title="Na mosca! (Tecla 5)">🎯</button>
+            <!-- Stats for Nerds HUD -->
+            <div id="stats-overlay" class="stats-overlay hidden">
+              <div class="stats-row"><span class="stats-key">Resolução:</span><span class="stats-val" id="stat-res">1920x1080</span></div>
+              <div class="stats-row"><span class="stats-key">FPS:</span><span class="stats-val" id="stat-fps">60 FPS</span></div>
+              <div class="stats-row"><span class="stats-key">Bitrate:</span><span class="stats-val" id="stat-bitrate">--</span></div>
+              <div class="stats-row"><span class="stats-key">Latência HLS:</span><span class="stats-val" id="stat-latency">--</span></div>
+              <div class="stats-row"><span class="stats-key">Buffer:</span><span class="stats-val" id="stat-buffer">--</span></div>
+              <div class="stats-row"><span class="stats-key">Quadros Perdidos:</span><span class="stats-val" id="stat-dropped">0</span></div>
             </div>
-            <button class="reaction-trigger-btn" id="btn-reaction-trigger" title="Reações ao vivo (Teclas 1 a 5)">
-              <span>🎉</span>
-            </button>
-          </div>
 
-          <!-- Loading Overlay -->
-          <div id="loading-overlay" class="overlay-message">
-            <div class="spinner"></div>
-            <div class="overlay-title">Conectando à transmissão...</div>
-            <div class="overlay-sub">Sincronizando sinal de vídeo em baixa latência (LL-HLS)</div>
-          </div>
+            <!-- Container de Emojis Flutuantes -->
+            <div id="reaction-container" class="reaction-container"></div>
 
-          <!-- Error Overlay -->
-          <div id="error-overlay" class="overlay-message hidden">
-            <div style="font-size: 2.5rem;">⚠️</div>
-            <div class="overlay-title" id="error-title">Sinal Interrompido</div>
-            <div class="overlay-sub" id="error-sub">Não foi possível carregar a transmissão. Aguardando novo sinal ou tentativa de reconexão...</div>
-            <div style="display: flex; gap: 10px; margin-top: 8px;">
-              <button class="btn btn-primary" id="btn-reconnect" style="background:var(--accent-discord);color:#fff;border:none;padding:8px 14px;border-radius:6px;cursor:pointer;">🔄 Reconectar Agora</button>
-              <a href="offline.html" id="btn-offline-link" style="background:#252a38;color:#fff;text-decoration:none;padding:8px 14px;border-radius:6px;">Ver Status</a>
+            <!-- Compact Expandable Reaction Dock -->
+            <div class="reaction-dock-wrapper" id="reaction-dock-wrapper">
+              <div class="reaction-menu" id="reaction-menu">
+                <button class="reaction-btn" data-emoji="🔥" title="Fogo! (Tecla 1)">🔥</button>
+                <button class="reaction-btn" data-emoji="💀" title="Caveira (Tecla 2)">💀</button>
+                <button class="reaction-btn" data-emoji="😂" title="Rindo (Tecla 3)">😂</button>
+                <button class="reaction-btn" data-emoji="👏" title="Palmas (Tecla 4)">👏</button>
+                <button class="reaction-btn" data-emoji="🎯" title="Na mosca! (Tecla 5)">🎯</button>
+              </div>
+              <button class="reaction-trigger-btn" id="btn-reaction-trigger" title="Reações ao vivo (Teclas 1 a 5)">
+                <span>🎉</span>
+              </button>
             </div>
-          </div>
 
-          <!-- Kick-style Integrated On-Hover Controls Bar -->
-          <div class="player-controls-overlay" id="player-controls">
-            <!-- Esquerda: Volume, Status e Tempo -->
-            <div class="controls-left">
-              <div class="volume-group">
-                <button class="btn-icon" id="btn-toggle-audio" data-tooltip="Desmutar Áudio (M)" aria-label="Desmutar Áudio">
-                  <span id="audio-btn-icon">🔊</span>
-                  <span class="sr-only">Desmutar Áudio</span>
-                </button>
-                <input type="range" class="volume-slider" id="volume-slider" min="0" max="1" step="0.01" value="1" title="Volume">
-                <span class="volume-percent" id="volume-percent">100%</span>
+            <!-- Loading Overlay -->
+            <div id="loading-overlay" class="overlay-message">
+              <div class="spinner"></div>
+              <div class="overlay-title">Conectando à transmissão...</div>
+              <div class="overlay-sub">Sincronizando sinal de vídeo em baixa latência (LL-HLS)</div>
+            </div>
+
+            <!-- Error Overlay -->
+            <div id="error-overlay" class="overlay-message hidden">
+              <div style="font-size: 2.5rem;">⚠️</div>
+              <div class="overlay-title" id="error-title">Sinal Interrompido</div>
+              <div class="overlay-sub" id="error-sub">Não foi possível carregar a transmissão. Aguardando novo sinal ou tentativa de reconexão...</div>
+              <div style="display: flex; gap: 10px; margin-top: 8px;">
+                <button class="btn btn-primary" id="btn-reconnect" style="background:var(--accent-discord);color:#fff;border:none;padding:8px 14px;border-radius:6px;cursor:pointer;">🔄 Reconectar Agora</button>
+                <a href="offline.html" id="btn-offline-link" style="background:#252a38;color:#fff;text-decoration:none;padding:8px 14px;border-radius:6px;">Ver Status</a>
+              </div>
+            </div>
+
+            <!-- Kick-style Integrated On-Hover Controls Bar -->
+            <div class="player-controls-overlay" id="player-controls">
+              <!-- Esquerda: Volume, Status e Tempo -->
+              <div class="controls-left">
+                <div class="volume-group">
+                  <button class="btn-icon" id="btn-toggle-audio" data-tooltip="Desmutar Áudio (M)" aria-label="Desmutar Áudio">
+                    <span id="audio-btn-icon">🔊</span>
+                    <span class="sr-only">Desmutar Áudio</span>
+                  </button>
+                  <input type="range" class="volume-slider" id="volume-slider" min="0" max="1" step="0.01" value="1" title="Volume">
+                  <span class="volume-percent" id="volume-percent">100%</span>
+                </div>
+
+                <div class="live-indicator-badge">
+                  <span class="live-dot"></span>
+                  <span>AO VIVO</span>
+                  <span class="res-mini-tag" id="res-mini-tag">1080p60</span>
+                </div>
+                <span class="live-timer" id="live-timer">00:00</span>
               </div>
 
-              <div class="live-indicator-badge">
-                <span class="live-dot"></span>
-                <span>AO VIVO</span>
-                <span class="res-mini-tag" id="res-mini-tag">1080p60</span>
-              </div>
-              <span class="live-timer" id="live-timer">00:00</span>
-            </div>
-
-            <!-- Direita: PiP, Modo Teatro, Qualidade, Stats, Glow, Tela Cheia -->
-            <div class="controls-right">
-              <button class="btn-icon" id="btn-pip" data-tooltip="Janela Flutuante (PiP) [P]" aria-label="Janela Flutuante (PiP)">
-                <span>🖼️</span>
-                <span class="sr-only">Janela Flutuante (PiP)</span>
-              </button>
-
-              <button class="btn-icon" id="btn-theater" data-tooltip="Modo Teatro (T)" aria-label="Modo Teatro">
-                <span>🎦</span>
-              </button>
-
-              <!-- Menu Popover de Qualidade Estilo Kick -->
-              <div class="quality-menu-wrap">
-                <button class="btn-icon" id="btn-quality" data-tooltip="Qualidade (Configurações)" aria-label="Qualidade">
-                  <span>⚙️</span>
+              <!-- Direita: PiP, Modo Teatro, Lado a Lado, Qualidade, Stats, Glow, Tela Cheia -->
+              <div class="controls-right">
+                <button class="btn-icon" id="btn-pip" data-tooltip="Janela Flutuante (PiP) [P]" aria-label="Janela Flutuante (PiP)">
+                  <span>🖼️</span>
+                  <span class="sr-only">Janela Flutuante (PiP)</span>
                 </button>
-                <div class="quality-dropdown" id="quality-dropdown">
-                  <div class="quality-dropdown-header">Qualidade de Vídeo</div>
-                  <div id="quality-options">
-                    <button class="quality-item active" data-level="-1"><span>Auto</span><span>✓</span></button>
-                    <button class="quality-item" data-level="1080"><span>1080p60</span><span></span></button>
-                    <button class="quality-item" data-level="720"><span>720p60</span><span></span></button>
-                    <button class="quality-item" data-level="480"><span>480p</span><span></span></button>
+
+                <button class="btn-icon" id="btn-theater" data-tooltip="Modo Teatro (T)" aria-label="Modo Teatro">
+                  <span>🎦</span>
+                </button>
+
+                <button class="btn-icon" id="btn-dual-view" data-tooltip="Lado a Lado / Multi-Live (D)" aria-label="Dual View">
+                  <span>👥</span>
+                </button>
+
+                <!-- Menu Popover de Qualidade Estilo Kick -->
+                <div class="quality-menu-wrap">
+                  <button class="btn-icon" id="btn-quality" data-tooltip="Qualidade (Configurações)" aria-label="Qualidade">
+                    <span>⚙️</span>
+                  </button>
+                  <div class="quality-dropdown" id="quality-dropdown">
+                    <div class="quality-dropdown-header">Qualidade de Vídeo</div>
+                    <div id="quality-options">
+                      <button class="quality-item active" data-level="-1"><span>Auto</span><span>✓</span></button>
+                      <button class="quality-item" data-level="1080"><span>1080p60</span><span></span></button>
+                      <button class="quality-item" data-level="720"><span>720p60</span><span></span></button>
+                      <button class="quality-item" data-level="480"><span>480p</span><span></span></button>
+                    </div>
                   </div>
                 </div>
+
+                <button class="btn-icon" id="btn-stats" data-tooltip="Estatísticas (S)" aria-label="Stats">
+                  <span>📊</span>
+                </button>
+
+                <button class="btn-icon" id="btn-ambient" data-tooltip="Ambilight / Glow (A)" aria-label="Glow">
+                  <span>✨</span>
+                </button>
+
+                <button class="btn-icon" id="btn-fullscreen" data-tooltip="Tela Cheia (F)" aria-label="Tela Cheia">
+                  <span>⛶</span>
+                  <span class="sr-only">Tela Cheia</span>
+                </button>
+
+                <button class="btn-icon" id="btn-help" data-tooltip="Atalhos de Teclado (?)" aria-label="Ajuda">
+                  <span>⌨️</span>
+                </button>
               </div>
+            </div>
+          </div>
 
-              <button class="btn-icon" id="btn-stats" data-tooltip="Estatísticas (S)" aria-label="Stats">
-                <span>📊</span>
-              </button>
-
-              <button class="btn-icon" id="btn-ambient" data-tooltip="Ambilight / Glow (A)" aria-label="Glow">
-                <span>✨</span>
-              </button>
-
-              <button class="btn-icon" id="btn-fullscreen" data-tooltip="Tela Cheia (F)" aria-label="Tela Cheia">
-                <span>⛶</span>
-                <span class="sr-only">Tela Cheia</span>
-              </button>
-
-              <button class="btn-icon" id="btn-help" data-tooltip="Atalhos de Teclado (?)" aria-label="Ajuda">
-                <span>⌨️</span>
-              </button>
+          <!-- Player 2 (Secundário para modo Lado a Lado) -->
+          <div class="player-container split-player hidden" id="split-player-container">
+            <video id="video-split" playsinline controls autoplay muted></video>
+            <div class="split-header">
+              <span class="split-streamer-name">
+                <span class="live-dot"></span>
+                <span id="split-streamer-name">2ª Transmissão</span>
+              </span>
+              <div class="split-controls">
+                <button class="btn-icon-sm" id="btn-split-audio" title="Alternar Áudio desta Live">🔇</button>
+                <button class="btn-icon-sm" id="btn-close-split" title="Fechar modo Lado a Lado">✕</button>
+              </div>
+            </div>
+            <div id="loading-overlay-split" class="overlay-message">
+              <div class="spinner"></div>
+              <div class="overlay-title">Conectando 2ª transmissão...</div>
             </div>
           </div>
         </div>
@@ -1156,6 +1258,7 @@
         <div class="shortcut-row"><span>Alternar Tela Cheia</span><kbd>F</kbd></div>
         <div class="shortcut-row"><span>Janela Flutuante (PiP)</span><kbd>P</kbd></div>
         <div class="shortcut-row"><span>Modo Teatro (Expandir tela)</span><kbd>T</kbd></div>
+        <div class="shortcut-row"><span>Modo Lado a Lado (Dual View)</span><kbd>D</kbd></div>
         <div class="shortcut-row"><span>Mutar / Desmutar Áudio</span><kbd>M</kbd></div>
         <div class="shortcut-row"><span>Aumentar / Diminuir Volume</span><span><kbd>↑</kbd> <kbd>↓</kbd></span></div>
         <div class="shortcut-row"><span>Estatísticas da Live (Stats)</span><kbd>S</kbd></div>
@@ -1214,6 +1317,19 @@
       const liveTimer = document.getElementById('live-timer');
       const toast = document.getElementById('toast');
       const toastMessage = document.getElementById('toast-message');
+
+      // Dual View (Lado a Lado) Elements
+      const playerGrid = document.getElementById('player-grid');
+      const splitPlayerContainer = document.getElementById('split-player-container');
+      const videoSplit = document.getElementById('video-split');
+      const splitStreamerName = document.getElementById('split-streamer-name');
+      const btnSplitAudio = document.getElementById('btn-split-audio');
+      const btnCloseSplit = document.getElementById('btn-close-split');
+      const btnDualView = document.getElementById('btn-dual-view');
+      const loadingOverlaySplit = document.getElementById('loading-overlay-split');
+
+      let hlsSplitInstance = null;
+      let dualViewActive = false;
 
       // Stats Elements
       const statRes = document.getElementById('stat-res');
@@ -1364,6 +1480,134 @@
         document.body.classList.add('theater-mode');
         btnTheater.classList.add('active');
       }
+
+      // Modo Lado a Lado (Dual View / Split Screen)
+      function openDualView(secondStreamUrl, secondStreamerName) {
+        dualViewActive = true;
+        playerGrid.classList.add('dual-view');
+        splitPlayerContainer.classList.remove('hidden');
+        btnDualView.classList.add('active');
+        splitStreamerName.textContent = secondStreamerName || '2ª Transmissão';
+        loadingOverlaySplit.classList.remove('hidden');
+
+        if (window.Hls && Hls.isSupported()) {
+          if (hlsSplitInstance) {
+            try { hlsSplitInstance.destroy(); } catch (e) {}
+            hlsSplitInstance = null;
+          }
+          hlsSplitInstance = new Hls({
+            lowLatencyMode: true,
+            liveSyncDurationCount: 1,
+            backBufferLength: 10
+          });
+          hlsSplitInstance.loadSource(secondStreamUrl);
+          hlsSplitInstance.attachMedia(videoSplit);
+          hlsSplitInstance.on(Hls.Events.MANIFEST_PARSED, () => {
+            loadingOverlaySplit.classList.add('hidden');
+            videoSplit.muted = true;
+            videoSplit.play().catch(function() {});
+          });
+          hlsSplitInstance.on(Hls.Events.ERROR, (event, data) => {
+            if (data.fatal) {
+              hlsSplitInstance.startLoad();
+            }
+          });
+        } else if (videoSplit.canPlayType('application/vnd.apple.mpegurl')) {
+          videoSplit.src = secondStreamUrl;
+          videoSplit.muted = true;
+          videoSplit.play().catch(function() {});
+          loadingOverlaySplit.classList.add('hidden');
+        }
+        showToast(`👥 Modo Lado a Lado: ${secondStreamerName || '2ª Live'}`);
+      }
+
+      function closeDualView() {
+        dualViewActive = false;
+        playerGrid.classList.remove('dual-view');
+        splitPlayerContainer.classList.add('hidden');
+        btnDualView.classList.remove('active');
+        if (hlsSplitInstance) {
+          try { hlsSplitInstance.destroy(); } catch (e) {}
+          hlsSplitInstance = null;
+        }
+        videoSplit.pause();
+        videoSplit.src = '';
+        showToast('Modo Lado a Lado encerrado');
+      }
+
+      window.__openDual = async (userId, streamerName) => {
+        try {
+          const res = await fetch(`/api/stream/status/${userId}`);
+          if (res.ok) {
+            const data = await res.json();
+            if (data.stream?.streamUrl) {
+              openDualView(data.stream.streamUrl, streamerName);
+              return;
+            }
+          }
+        } catch (e) {}
+        showToast('Não foi possível carregar a live deste streamer.');
+      };
+
+      btnDualView.addEventListener('click', async () => {
+        if (dualViewActive) {
+          closeDualView();
+          return;
+        }
+        // Tenta achar outra live ativa para abrir lado a lado
+        try {
+          const res = await fetch('/api/streams/active');
+          if (res.ok) {
+            const data = await res.json();
+            const currentParts = window.location.pathname.split('/');
+            const currentId = currentParts[currentParts.length - 1];
+            const other = data.streams?.find(s => s.userId !== currentId);
+            if (other) {
+              window.__openDual(other.userId, other.streamerName);
+              return;
+            }
+          }
+        } catch (e) {}
+        // Se só tiver 1 live aberta, clona a tela atual para teste imediato
+        openDualView(streamSrc, `${streamerNameEl.textContent} (Clone de Teste)`);
+      });
+
+      btnCloseSplit.addEventListener('click', closeDualView);
+
+      btnSplitAudio.addEventListener('click', () => {
+        if (videoSplit.muted) {
+          videoSplit.muted = false;
+          video.muted = true;
+          updateAudioState(true);
+          btnSplitAudio.textContent = '🔊';
+          showToast('🔊 Áudio focado na 2ª transmissão');
+        } else {
+          videoSplit.muted = true;
+          btnSplitAudio.textContent = '🔇';
+          showToast('🔇 2ª transmissão mutada');
+        }
+      });
+
+      // Clique no vídeo foca o áudio nele
+      video.addEventListener('click', () => {
+        if (dualViewActive && !videoSplit.muted) {
+          videoSplit.muted = true;
+          btnSplitAudio.textContent = '🔇';
+          video.muted = false;
+          updateAudioState(false);
+          showToast('🔊 Áudio focado na 1ª transmissão');
+        }
+      });
+
+      videoSplit.addEventListener('click', () => {
+        if (dualViewActive && !video.muted) {
+          video.muted = true;
+          updateAudioState(true);
+          videoSplit.muted = false;
+          btnSplitAudio.textContent = '🔊';
+          showToast('🔊 Áudio focado na 2ª transmissão');
+        }
+      });
 
       // Fullscreen
       function toggleFullscreen() {
@@ -1667,24 +1911,26 @@
 
           if (data.streams && data.streams.length > 0) {
             data.streams.forEach(s => {
-              const item = document.createElement('a');
+              const item = document.createElement('div');
               const isCur = s.userId === currentId;
               item.className = `channel-item ${isCur ? 'active' : ''}`;
-              item.href = s.watchUrl;
 
               const avatarHtml = s.streamerAvatar
                 ? `<img src="${s.streamerAvatar}" class="channel-avatar-img" alt="${s.streamerName}">`
                 : `<span>👤</span>`;
 
               item.innerHTML = `
-                <div class="channel-avatar-wrap">
-                  ${avatarHtml}
-                  <span class="avatar-live-indicator"></span>
-                </div>
-                <div class="channel-info">
-                  <div class="channel-name">${s.streamerName}</div>
-                  <div class="channel-call">${s.voiceChannelName || 'Transmissão de Tela'}</div>
-                </div>
+                <a href="${s.watchUrl}" style="display:flex;align-items:center;gap:10px;flex:1;text-decoration:none;color:inherit;min-width:0;">
+                  <div class="channel-avatar-wrap">
+                    ${avatarHtml}
+                    <span class="avatar-live-indicator"></span>
+                  </div>
+                  <div class="channel-info">
+                    <div class="channel-name">${s.streamerName}</div>
+                    <div class="channel-call">${s.voiceChannelName || 'Transmissão de Tela'}</div>
+                  </div>
+                </a>
+                ${!isCur ? `<button class="btn-icon-sm" style="width:26px;height:26px;font-size:0.75rem;" title="Assistir lado a lado com esta live" onclick="window.__openDual('${s.userId}', '${s.streamerName}')">👥</button>` : ''}
               `;
               sidebarChannels.appendChild(item);
             });
@@ -1720,6 +1966,9 @@
         } else if (key === 't') {
           e.preventDefault();
           toggleTheater();
+        } else if (key === 'd') {
+          e.preventDefault();
+          btnDualView.click();
         } else if (key === 'm') {
           e.preventDefault();
           toggleAudio();
