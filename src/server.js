@@ -221,7 +221,9 @@ function createServerInstance(options = {}) {
       const activeList = streamStore.getAllStreams().map(s => ({
         userId: s.userId,
         streamId: s.streamId,
-        streamerName: s.voiceChannelName || s.userId,
+        streamerName: s.streamerName || s.voiceChannelName || s.userId,
+        streamerAvatar: s.streamerAvatar || null,
+        voiceChannelName: s.voiceChannelName || 'Voz',
         watchUrl: `/watch/${s.userId}`
       }));
       return sendJson(res, 200, {
@@ -308,10 +310,12 @@ function createServerInstance(options = {}) {
       const playerPath = path.join(publicDir, 'player.html');
       if (fs.existsSync(playerPath)) {
         let html = fs.readFileSync(playerPath, 'utf8');
-        const injection = `<script>window.__STREAM_SRC__ = ${JSON.stringify(stream.streamUrl)}; window.__STREAMER_NAME__ = ${JSON.stringify(stream.voiceChannelName || stream.userId)};</script>`;
+        const streamerName = stream.streamerName || stream.voiceChannelName || stream.userId;
+        const streamerAvatar = stream.streamerAvatar || '';
+        const injection = `<script>window.__STREAM_SRC__ = ${JSON.stringify(stream.streamUrl)}; window.__STREAMER_NAME__ = ${JSON.stringify(streamerName)}; window.__STREAMER_AVATAR__ = ${JSON.stringify(streamerAvatar)};</script>`;
         html = html.replace('<head>', `<head>\n  ${injection}`);
         html = html.replaceAll('{{STREAM_SRC}}', stream.streamUrl);
-        html = html.replaceAll('{{STREAMER_NAME}}', stream.voiceChannelName || stream.userId);
+        html = html.replaceAll('{{STREAMER_NAME}}', streamerName);
         return res.writeHead(200).end(html);
       }
 

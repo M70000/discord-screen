@@ -8,10 +8,10 @@
   <style>
     :root {
       --bg-color: #0e1015;
-      --sidebar-bg: #12141a;
-      --card-bg: #161922;
-      --card-border: rgba(255, 255, 255, 0.07);
-      --card-border-hover: rgba(255, 255, 255, 0.18);
+      --sidebar-bg: #111319;
+      --card-bg: #161822;
+      --card-border: rgba(255, 255, 255, 0.08);
+      --card-border-hover: rgba(255, 255, 255, 0.2);
       --text-main: #f2f3f5;
       --text-muted: #949ba4;
       --accent-discord: #5865f2;
@@ -22,8 +22,8 @@
       --unmute-bg: rgba(240, 178, 50, 0.18);
       --unmute-border: rgba(240, 178, 50, 0.4);
       --unmute-text: #f0b232;
-      --btn-bg: rgba(24, 27, 37, 0.85);
-      --btn-hover: rgba(36, 41, 56, 0.95);
+      --btn-bg: rgba(22, 25, 35, 0.85);
+      --btn-hover: rgba(36, 41, 58, 0.95);
     }
 
     * {
@@ -43,16 +43,17 @@
       overflow-x: hidden;
     }
 
-    /* Top Compact Brand Bar */
+    /* Top Compact Header */
     header {
       background-color: var(--sidebar-bg);
       border-bottom: 1px solid var(--card-border);
-      padding: 10px 18px;
+      padding: 8px 18px;
       display: flex;
       align-items: center;
       justify-content: space-between;
       gap: 16px;
-      z-index: 20;
+      z-index: 25;
+      height: 48px;
     }
 
     .header-left {
@@ -62,17 +63,17 @@
     }
 
     .brand-logo {
-      font-size: 1.05rem;
+      font-size: 0.95rem;
       font-weight: 800;
-      letter-spacing: -0.3px;
       display: flex;
       align-items: center;
       gap: 8px;
+      letter-spacing: -0.2px;
     }
 
     .live-dot {
-      width: 9px;
-      height: 9px;
+      width: 8px;
+      height: 8px;
       border-radius: 50%;
       background-color: var(--live-red);
       box-shadow: 0 0 10px var(--live-red);
@@ -89,28 +90,33 @@
       flex: 1;
       display: flex;
       width: 100%;
-      min-height: calc(100vh - 53px);
+      min-height: calc(100vh - 48px);
       position: relative;
     }
 
     /* Left Sidebar: Lives Abertas */
     .sidebar {
-      width: 240px;
+      width: 250px;
       background: var(--sidebar-bg);
       border-right: 1px solid var(--card-border);
       display: flex;
       flex-direction: column;
-      transition: width 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      transition: width 0.25s cubic-bezier(0.16, 1, 0.3, 1), transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
       z-index: 15;
       flex-shrink: 0;
     }
 
     .sidebar.collapsed {
-      width: 60px;
+      width: 64px;
+    }
+
+    /* Quando em Modo Teatro, a sidebar desaparece para dar foco total */
+    body.theater-mode .sidebar {
+      display: none !important;
     }
 
     .sidebar-header {
-      padding: 14px 16px;
+      padding: 12px 14px;
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -118,7 +124,7 @@
     }
 
     .sidebar-title {
-      font-size: 0.76rem;
+      font-size: 0.74rem;
       font-weight: 700;
       color: var(--text-muted);
       letter-spacing: 0.6px;
@@ -171,7 +177,6 @@
       text-decoration: none;
       color: var(--text-main);
       transition: background 0.15s;
-      position: relative;
     }
 
     .channel-item:hover {
@@ -179,24 +184,31 @@
     }
 
     .channel-item.active {
-      background: rgba(88, 101, 242, 0.16);
-      border: 1px solid rgba(88, 101, 242, 0.35);
+      background: rgba(88, 101, 242, 0.18);
+      border: 1px solid rgba(88, 101, 242, 0.4);
     }
 
-    .channel-avatar {
-      width: 34px;
-      height: 34px;
+    .channel-avatar-wrap {
+      width: 36px;
+      height: 36px;
       border-radius: 50%;
-      background: #242938;
+      background: #252a38;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 1rem;
       flex-shrink: 0;
       position: relative;
+      overflow: visible;
     }
 
-    .channel-avatar .avatar-live-indicator {
+    .channel-avatar-img {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+
+    .avatar-live-indicator {
       position: absolute;
       bottom: -1px;
       right: -1px;
@@ -220,14 +232,14 @@
     }
 
     .channel-name {
-      font-size: 0.86rem;
+      font-size: 0.85rem;
       font-weight: 600;
       overflow: hidden;
       text-overflow: ellipsis;
     }
 
     .channel-call {
-      font-size: 0.74rem;
+      font-size: 0.72rem;
       color: var(--text-muted);
       overflow: hidden;
       text-overflow: ellipsis;
@@ -239,33 +251,44 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      padding: 18px 24px 30px;
+      padding: 16px 24px 28px;
       min-width: 0;
       position: relative;
+      transition: padding 0.25s ease;
+    }
+
+    body.theater-mode .main-theater {
+      padding: 10px 16px 20px;
+      max-width: 100%;
     }
 
     .player-wrapper {
       position: relative;
       width: 100%;
-      max-width: 1360px;
+      max-width: 1380px;
       display: flex;
       justify-content: center;
       align-items: center;
+      transition: max-width 0.25s ease;
+    }
+
+    body.theater-mode .player-wrapper {
+      max-width: 100%;
     }
 
     /* Philips Ambilight Inspired Glow */
     .ambient-glow {
       position: absolute;
-      top: -14%;
-      left: -14%;
-      width: 128%;
-      height: 128%;
-      filter: blur(105px) saturate(2.6) brightness(1.25);
-      opacity: 0.85;
+      top: -12%;
+      left: -12%;
+      width: 124%;
+      height: 124%;
+      filter: blur(100px) saturate(2.8) brightness(1.3);
+      opacity: 0.88;
       pointer-events: none;
       z-index: 0;
       transition: opacity 0.4s ease;
-      border-radius: 40px;
+      border-radius: 36px;
       transform: translateZ(0);
     }
 
@@ -278,10 +301,10 @@
       width: 100%;
       aspect-ratio: 16 / 9;
       background-color: #000;
-      border-radius: 14px;
+      border-radius: 12px;
       overflow: hidden;
       border: 1px solid var(--card-border);
-      box-shadow: 0 16px 48px rgba(0, 0, 0, 0.75);
+      box-shadow: 0 16px 54px rgba(0, 0, 0, 0.8);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -347,15 +370,15 @@
       bottom: 0;
       left: 0;
       right: 0;
-      padding: 24px 20px 14px;
-      background: linear-gradient(to top, rgba(0, 0, 0, 0.92) 0%, rgba(0, 0, 0, 0.45) 60%, transparent 100%);
+      padding: 28px 18px 12px;
+      background: linear-gradient(to top, rgba(0, 0, 0, 0.94) 0%, rgba(0, 0, 0, 0.45) 60%, transparent 100%);
       display: flex;
       align-items: center;
       justify-content: space-between;
       gap: 16px;
       z-index: 5;
       opacity: 1;
-      transition: opacity 0.28s ease, transform 0.28s ease;
+      transition: opacity 0.25s ease, transform 0.25s ease;
       transform: translateY(0);
       user-select: none;
     }
@@ -363,102 +386,208 @@
     .player-controls-overlay.fade-out {
       opacity: 0;
       pointer-events: none;
-      transform: translateY(8px);
+      transform: translateY(6px);
     }
 
-    .controls-left, .controls-right {
+    /* Distribuição Kick: Esquerda vs Direita */
+    .controls-left {
       display: flex;
       align-items: center;
-      gap: 10px;
-      flex-wrap: wrap;
+      gap: 12px;
     }
 
+    .controls-right {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    /* Volume Slider Aprimorado com Porcentagem */
     .volume-group {
       display: inline-flex;
       align-items: center;
       gap: 8px;
-      background: var(--btn-bg);
+      background: rgba(24, 27, 37, 0.75);
       backdrop-filter: blur(8px);
       border: 1px solid var(--card-border);
-      padding: 0 10px 0 0;
+      padding: 4px 10px 4px 6px;
       border-radius: 8px;
+      transition: all 0.15s ease;
     }
 
-    .volume-group .btn {
-      border: none;
-      background: transparent;
-      padding-right: 6px;
+    .volume-group:hover {
+      background: rgba(30, 34, 46, 0.9);
+      border-color: var(--card-border-hover);
     }
 
     .volume-slider {
-      width: 70px;
-      height: 5px;
+      width: 90px;
+      height: 6px;
       accent-color: var(--accent-discord);
       cursor: pointer;
     }
 
-    .btn {
+    .volume-percent {
+      font-size: 0.76rem;
+      font-family: monospace;
+      color: var(--text-muted);
+      min-width: 34px;
+      text-align: right;
+      font-weight: 600;
+    }
+
+    /* Botões Limpos com Ícones e Tooltips Estilo Kick */
+    .btn-icon {
       background: var(--btn-bg);
       backdrop-filter: blur(8px);
       color: var(--text-main);
       border: 1px solid var(--card-border);
-      padding: 8px 14px;
-      font-size: 0.86rem;
-      font-weight: 500;
+      width: 36px;
+      height: 36px;
       border-radius: 8px;
       cursor: pointer;
       display: inline-flex;
       align-items: center;
-      gap: 6px;
+      justify-content: center;
+      font-size: 1rem;
       user-select: none;
-      transition: all 0.18s ease;
-      text-decoration: none;
+      transition: all 0.15s ease;
+      position: relative;
     }
 
-    .btn:hover {
+    .btn-icon:hover {
       background: var(--btn-hover);
       border-color: var(--card-border-hover);
-      transform: translateY(-1px);
+      transform: scale(1.06);
     }
 
-    .btn.active {
+    .btn-icon:active {
+      transform: scale(0.95);
+    }
+
+    .btn-icon.active {
       background: var(--accent-discord);
       border-color: var(--accent-discord);
       color: #fff;
     }
 
-    .btn-primary {
-      background: var(--accent-discord);
-      border-color: var(--accent-discord);
+    /* Tooltip moderno flutuante estilo Kick */
+    [data-tooltip] {
+      position: relative;
     }
 
-    .btn-icon {
-      padding: 8px 10px;
+    [data-tooltip]::after {
+      content: attr(data-tooltip);
+      position: absolute;
+      bottom: 118%;
+      left: 50%;
+      transform: translateX(-50%) translateY(4px);
+      background: rgba(14, 16, 22, 0.95);
+      color: #f2f3f5;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      padding: 4px 8px;
+      border-radius: 6px;
+      font-size: 0.74rem;
+      font-weight: 500;
+      white-space: nowrap;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.15s ease, transform 0.15s ease;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+      z-index: 50;
     }
 
-    .stream-meta {
+    [data-tooltip]:hover::after {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    .live-indicator-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(242, 63, 67, 0.18);
+      border: 1px solid rgba(242, 63, 67, 0.4);
+      color: var(--live-red);
+      font-size: 0.75rem;
+      font-weight: 800;
+      padding: 4px 9px;
+      border-radius: 6px;
+      letter-spacing: 0.5px;
+    }
+
+    .live-timer {
+      font-family: monospace;
+      color: #fff;
+      font-weight: 600;
+      font-size: 0.78rem;
+    }
+
+    /* Menu de Qualidade Estilo Kick */
+    .quality-menu-wrap {
+      position: relative;
+    }
+
+    .quality-dropdown {
+      position: absolute;
+      bottom: 120%;
+      right: 0;
+      background: rgba(18, 20, 28, 0.96);
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--card-border-hover);
+      border-radius: 10px;
+      padding: 6px;
+      min-width: 130px;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      opacity: 0;
+      transform: translateY(8px) scale(0.95);
+      pointer-events: none;
+      transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+      z-index: 40;
+    }
+
+    .quality-dropdown.show {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+      pointer-events: auto;
+    }
+
+    .quality-dropdown-header {
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      padding: 4px 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      margin-bottom: 4px;
+    }
+
+    .quality-item {
+      background: none;
+      border: none;
+      color: var(--text-main);
+      padding: 6px 10px;
+      border-radius: 6px;
       font-size: 0.82rem;
-      color: #c9cdd4;
+      cursor: pointer;
       display: flex;
       align-items: center;
-      gap: 8px;
-      background: rgba(0, 0, 0, 0.4);
-      padding: 4px 10px;
-      border-radius: 20px;
-      backdrop-filter: blur(4px);
+      justify-content: space-between;
+      transition: background 0.12s;
+      text-align: left;
     }
 
-    .status-dot {
-      width: 7px;
-      height: 7px;
-      border-radius: 50%;
-      background-color: var(--live-red);
+    .quality-item:hover {
+      background: rgba(255, 255, 255, 0.08);
     }
 
-    .live-tag {
+    .quality-item.active {
+      color: var(--accent-discord);
       font-weight: 700;
-      color: var(--live-red);
-      font-size: 0.78rem;
     }
 
     /* Stats for Nerds HUD */
@@ -466,7 +595,7 @@
       position: absolute;
       top: 14px;
       left: 14px;
-      background: rgba(10, 12, 16, 0.9);
+      background: rgba(10, 12, 16, 0.92);
       backdrop-filter: blur(10px);
       border: 1px solid rgba(255, 255, 255, 0.14);
       border-radius: 8px;
@@ -500,11 +629,11 @@
       color: #57f287;
     }
 
-    /* Compact Expandable Reaction Dock */
+    /* Doca de Emojis Compacta e Expansível */
     .reaction-dock-wrapper {
       position: absolute;
       right: 18px;
-      bottom: 64px;
+      bottom: 66px;
       z-index: 8;
       display: flex;
       flex-direction: column;
@@ -516,7 +645,7 @@
       display: flex;
       flex-direction: column;
       gap: 6px;
-      background: rgba(18, 20, 28, 0.92);
+      background: rgba(18, 20, 28, 0.94);
       backdrop-filter: blur(12px);
       border: 1px solid var(--card-border-hover);
       padding: 8px 6px;
@@ -525,7 +654,7 @@
       opacity: 0;
       transform: translateY(12px) scale(0.85);
       pointer-events: none;
-      transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
     .reaction-menu.expanded {
@@ -552,7 +681,7 @@
     .reaction-trigger-btn {
       background: rgba(22, 25, 35, 0.9);
       backdrop-filter: blur(8px);
-      border: 1px solid rgba(255, 255, 255, 0.16);
+      border: 1px solid rgba(255, 255, 255, 0.18);
       color: #fff;
       width: 40px;
       height: 40px;
@@ -595,20 +724,27 @@
       100% { transform: translateY(-260px) translateX(var(--drift, 0px)) scale(1.4); opacity: 0; }
     }
 
-    /* Kick-style Stream Info Card below video */
+    /* Kick-style Streamer Info Card below video */
     .stream-info-card {
       width: 100%;
-      max-width: 1360px;
+      max-width: 1380px;
       margin-top: 14px;
       background: var(--card-bg);
       border: 1px solid var(--card-border);
       border-radius: 12px;
-      padding: 16px 20px;
+      padding: 14px 20px;
       display: flex;
       align-items: center;
       justify-content: space-between;
       gap: 16px;
       flex-wrap: wrap;
+      transition: all 0.25s ease;
+    }
+
+    body.theater-mode .stream-info-card {
+      max-width: 100%;
+      padding: 10px 18px;
+      margin-top: 8px;
     }
 
     .streamer-profile {
@@ -627,12 +763,21 @@
       justify-content: center;
       font-size: 1.35rem;
       border: 2px solid var(--accent-discord);
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+
+    .streamer-avatar img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
     }
 
     .streamer-details {
       display: flex;
       flex-direction: column;
-      gap: 3px;
+      gap: 2px;
     }
 
     .streamer-name-row {
@@ -658,7 +803,7 @@
     }
 
     .stream-title {
-      font-size: 0.88rem;
+      font-size: 0.86rem;
       color: var(--text-muted);
     }
 
@@ -777,32 +922,40 @@
       transform: translateY(0);
     }
 
-    .hidden {
-      display: none !important;
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
     }
 
     @media (max-width: 860px) {
       .sidebar {
         position: fixed;
         left: 0;
-        top: 53px;
+        top: 48px;
         bottom: 0;
         box-shadow: 4px 0 16px rgba(0,0,0,0.5);
       }
       .sidebar.collapsed {
         transform: translateX(-100%);
-        width: 240px;
+        width: 250px;
       }
       .main-theater {
-        padding: 12px;
+        padding: 10px;
       }
-      .volume-slider { width: 50px; }
+      .volume-slider { width: 60px; }
     }
   </style>
 </head>
 <body>
 
-  <!-- Top Compact Brand Bar -->
+  <!-- Top Compact Header -->
   <header>
     <div class="header-left">
       <div class="brand-logo">
@@ -810,10 +963,10 @@
         <span>AO VIVO</span>
       </div>
       <span style="color: var(--card-border-hover);">|</span>
-      <span style="font-size: 0.92rem; font-weight: 600;">Transmissão de Tela</span>
+      <span style="font-size: 0.9rem; font-weight: 600;">Transmissão de Tela</span>
     </div>
     <div class="header-right">
-      <span style="font-size: 0.82rem; color: var(--text-muted);">Player 1080p 60fps</span>
+      <span style="font-size: 0.82rem; color: var(--text-muted);" id="header-streamer">Low-Latency HLS • 1080p 60fps</span>
     </div>
   </header>
 
@@ -829,7 +982,7 @@
         <button class="btn-toggle-sidebar" id="btn-toggle-sidebar" title="Recolher / Expandir barra lateral">◀</button>
       </div>
       <div class="sidebar-channels" id="sidebar-channels">
-        <!-- Inserido dinamicamente -->
+        <!-- Inserido dinamicamente via JS -->
       </div>
     </aside>
 
@@ -882,56 +1035,74 @@
             <div class="overlay-title" id="error-title">Sinal Interrompido</div>
             <div class="overlay-sub" id="error-sub">Não foi possível carregar a transmissão. Aguardando novo sinal ou tentativa de reconexão...</div>
             <div style="display: flex; gap: 10px; margin-top: 8px;">
-              <button class="btn btn-primary" id="btn-reconnect">🔄 Reconectar Agora</button>
-              <a class="btn" href="offline.html" id="btn-offline-link">Ver Status</a>
+              <button class="btn btn-primary" id="btn-reconnect" style="background:var(--accent-discord);color:#fff;border:none;padding:8px 14px;border-radius:6px;cursor:pointer;">🔄 Reconectar Agora</button>
+              <a href="offline.html" id="btn-offline-link" style="background:#252a38;color:#fff;text-decoration:none;padding:8px 14px;border-radius:6px;">Ver Status</a>
             </div>
           </div>
 
           <!-- Kick-style Integrated On-Hover Controls Bar -->
           <div class="player-controls-overlay" id="player-controls">
+            <!-- Esquerda: Volume, Status e Tempo -->
             <div class="controls-left">
               <div class="volume-group">
-                <button class="btn" id="btn-toggle-audio" title="Alternar Áudio (Tecla M)">
+                <button class="btn-icon" id="btn-toggle-audio" data-tooltip="Desmutar Áudio (M)" aria-label="Desmutar Áudio">
                   <span id="audio-btn-icon">🔊</span>
-                  <span id="audio-btn-label">Desmutar Áudio</span>
+                  <span class="sr-only">Desmutar Áudio</span>
                 </button>
-                <input type="range" class="volume-slider" id="volume-slider" min="0" max="1" step="0.05" value="1" title="Volume">
+                <input type="range" class="volume-slider" id="volume-slider" min="0" max="1" step="0.01" value="1" title="Volume">
+                <span class="volume-percent" id="volume-percent">100%</span>
               </div>
 
-              <button class="btn" id="btn-pip" title="Janela Flutuante (Tecla P)">
-                <span>🖼️</span>
-                <span>Janela Flutuante (PiP)</span>
-              </button>
-
-              <button class="btn" id="btn-fullscreen" title="Tela Cheia (Tecla F)">
-                <span>⛶</span>
-                <span>Tela Cheia</span>
-              </button>
-
-              <button class="btn btn-icon" id="btn-stats" title="Estatísticas Técnicas (Tecla S)">
-                <span>📊</span>
-                <span>Stats</span>
-              </button>
-
-              <button class="btn btn-icon" id="btn-ambient" title="Ambilight / Luz Ambiente (Tecla A)">
-                <span>✨</span>
-                <span>Glow</span>
-              </button>
-
-              <button class="btn btn-icon" id="btn-help" title="Atalhos de Teclado (Tecla ?)">
-                <span>⌨️</span>
-              </button>
+              <div class="live-indicator-badge">
+                <span class="live-dot"></span>
+                <span>AO VIVO</span>
+              </div>
+              <span class="live-timer" id="live-timer">00:00</span>
             </div>
 
+            <!-- Direita: PiP, Modo Teatro, Qualidade, Stats, Glow, Tela Cheia -->
             <div class="controls-right">
-              <div class="stream-meta">
-                <span class="status-dot"></span>
-                <span class="live-tag">AO VIVO</span>
-                <span>•</span>
-                <span id="protocol-info">Low-Latency HLS</span>
-                <span>•</span>
-                <span id="resolution-info">1080p 60fps</span>
+              <button class="btn-icon" id="btn-pip" data-tooltip="Janela Flutuante (PiP) [P]" aria-label="Janela Flutuante (PiP)">
+                <span>🖼️</span>
+                <span class="sr-only">Janela Flutuante (PiP)</span>
+              </button>
+
+              <button class="btn-icon" id="btn-theater" data-tooltip="Modo Teatro (T)" aria-label="Modo Teatro">
+                <span>🎦</span>
+              </button>
+
+              <!-- Menu Popover de Qualidade Estilo Kick -->
+              <div class="quality-menu-wrap">
+                <button class="btn-icon" id="btn-quality" data-tooltip="Qualidade (Configurações)" aria-label="Qualidade">
+                  <span>⚙️</span>
+                </button>
+                <div class="quality-dropdown" id="quality-dropdown">
+                  <div class="quality-dropdown-header">Qualidade de Vídeo</div>
+                  <div id="quality-options">
+                    <button class="quality-item active" data-level="-1"><span>Auto</span><span>✓</span></button>
+                    <button class="quality-item" data-level="1080"><span>1080p60</span><span></span></button>
+                    <button class="quality-item" data-level="720"><span>720p60</span><span></span></button>
+                    <button class="quality-item" data-level="480"><span>480p</span><span></span></button>
+                  </div>
+                </div>
               </div>
+
+              <button class="btn-icon" id="btn-stats" data-tooltip="Estatísticas (S)" aria-label="Stats">
+                <span>📊</span>
+              </button>
+
+              <button class="btn-icon" id="btn-ambient" data-tooltip="Ambilight / Glow (A)" aria-label="Glow">
+                <span>✨</span>
+              </button>
+
+              <button class="btn-icon" id="btn-fullscreen" data-tooltip="Tela Cheia (F)" aria-label="Tela Cheia">
+                <span>⛶</span>
+                <span class="sr-only">Tela Cheia</span>
+              </button>
+
+              <button class="btn-icon" id="btn-help" data-tooltip="Atalhos de Teclado (?)" aria-label="Ajuda">
+                <span>⌨️</span>
+              </button>
             </div>
           </div>
         </div>
@@ -940,13 +1111,16 @@
       <!-- Kick-style Streamer Info Card below video -->
       <div class="stream-info-card">
         <div class="streamer-profile">
-          <div class="streamer-avatar">👤</div>
+          <div class="streamer-avatar" id="streamer-avatar-box">
+            <span id="streamer-avatar-fallback">👤</span>
+            <img id="streamer-avatar-img" class="channel-avatar-img hidden" alt="Avatar">
+          </div>
           <div class="streamer-details">
             <div class="streamer-name-row">
               <h2 id="streamer-name">Streamer</h2>
               <span class="badge-live-pill">AO VIVO</span>
             </div>
-            <p class="stream-title">Transmissão de Tela</p>
+            <p class="stream-title" id="stream-title-text">Transmissão de Tela</p>
           </div>
         </div>
         <div class="stream-actions">
@@ -969,6 +1143,7 @@
       <div class="modal-body">
         <div class="shortcut-row"><span>Alternar Tela Cheia</span><kbd>F</kbd></div>
         <div class="shortcut-row"><span>Janela Flutuante (PiP)</span><kbd>P</kbd></div>
+        <div class="shortcut-row"><span>Modo Teatro (Expandir tela)</span><kbd>T</kbd></div>
         <div class="shortcut-row"><span>Mutar / Desmutar Áudio</span><kbd>M</kbd></div>
         <div class="shortcut-row"><span>Aumentar / Diminuir Volume</span><span><kbd>↑</kbd> <kbd>↓</kbd></span></div>
         <div class="shortcut-row"><span>Estatísticas da Live (Stats)</span><kbd>S</kbd></div>
@@ -999,10 +1174,14 @@
       const unmuteBadgeText = document.getElementById('unmute-badge-text');
       const btnToggleAudio = document.getElementById('btn-toggle-audio');
       const audioBtnIcon = document.getElementById('audio-btn-icon');
-      const audioBtnLabel = document.getElementById('audio-btn-label');
       const volumeSlider = document.getElementById('volume-slider');
+      const volumePercent = document.getElementById('volume-percent');
       const btnPip = document.getElementById('btn-pip');
+      const btnTheater = document.getElementById('btn-theater');
       const btnFullscreen = document.getElementById('btn-fullscreen');
+      const btnQuality = document.getElementById('btn-quality');
+      const qualityDropdown = document.getElementById('quality-dropdown');
+      const qualityOptions = document.getElementById('quality-options');
       const btnStats = document.getElementById('btn-stats');
       const btnAmbient = document.getElementById('btn-ambient');
       const btnHelp = document.getElementById('btn-help');
@@ -1018,7 +1197,9 @@
       const sidebarChannels = document.getElementById('sidebar-channels');
       const btnReconnect = document.getElementById('btn-reconnect');
       const streamerNameEl = document.getElementById('streamer-name');
-      const resolutionInfo = document.getElementById('resolution-info');
+      const streamerAvatarImg = document.getElementById('streamer-avatar-img');
+      const streamerAvatarFallback = document.getElementById('streamer-avatar-fallback');
+      const liveTimer = document.getElementById('live-timer');
       const toast = document.getElementById('toast');
       const toastMessage = document.getElementById('toast-message');
 
@@ -1036,22 +1217,32 @@
       let toastTimer = null;
       let statsTimer = null;
       let controlsTimeout = null;
+      let liveStartTime = Date.now();
+      let liveTimerInterval = null;
       let ambientTimer = null;
       let ambientCtx = ambientCanvas.getContext('2d', { willReadFrequently: true });
       let ambientEnabled = localStorage.getItem('discord_ambient_glow') !== 'false';
       let statsEnabled = false;
+      let theaterEnabled = localStorage.getItem('discord_theater_mode') === 'true';
       const MAX_RECONNECT_ATTEMPTS = 15;
 
       // Extract parameters
       const urlParams = new URLSearchParams(window.location.search);
       let streamSrc = urlParams.get('src') || (window.__STREAM_SRC__ || '').trim();
       const streamerParam = urlParams.get('streamer') || urlParams.get('user') || urlParams.get('name') || window.__STREAMER_NAME__;
+      const avatarParam = urlParams.get('avatar') || window.__STREAMER_AVATAR__;
 
       if (streamerParam) {
         streamerNameEl.textContent = streamerParam;
       }
 
-      function showToast(message, duration = 2800) {
+      if (avatarParam) {
+        streamerAvatarImg.src = avatarParam;
+        streamerAvatarImg.classList.remove('hidden');
+        streamerAvatarFallback.classList.add('hidden');
+      }
+
+      function showToast(message, duration = 2600) {
         if (toastTimer) clearTimeout(toastTimer);
         toastMessage.textContent = message;
         toast.classList.add('show');
@@ -1060,40 +1251,53 @@
         }, duration);
       }
 
-      // Restaura volume salvo
+      // Live Timer
+      function updateLiveTimer() {
+        const diffSec = Math.floor((Date.now() - liveStartTime) / 1000);
+        const m = Math.floor(diffSec / 60).toString().padStart(2, '0');
+        const s = (diffSec % 60).toString().padStart(2, '0');
+        if (liveTimer) liveTimer.textContent = `${m}:${s}`;
+      }
+      liveTimerInterval = setInterval(updateLiveTimer, 1000);
+
+      // Volume Control com Porcentagem e LocalStorage
       const savedVolume = localStorage.getItem('discord_stream_volume');
+      let initialVol = 1.0;
       if (savedVolume !== null) {
         const v = parseFloat(savedVolume);
-        if (!isNaN(v)) {
-          video.volume = v;
-          volumeSlider.value = v;
-        }
+        if (!isNaN(v)) initialVol = Math.max(0, Math.min(1, v));
       }
+      video.volume = initialVol;
+      volumeSlider.value = initialVol;
+      volumePercent.textContent = `${Math.round(initialVol * 100)}%`;
 
       function updateAudioState(isMuted) {
-        if (isMuted) {
+        if (isMuted || video.volume === 0) {
           unmuteBadge.classList.remove('active-audio');
           unmuteBadgeIcon.textContent = '🔇';
           unmuteBadgeText.textContent = 'Clique para desmutar áudio';
-          audioBtnIcon.textContent = '🔊';
-          audioBtnLabel.textContent = 'Desmutar Áudio';
+          audioBtnIcon.textContent = '🔇';
+          btnToggleAudio.setAttribute('data-tooltip', 'Desmutar Áudio (M)');
         } else {
           unmuteBadge.classList.add('active-audio');
           unmuteBadgeIcon.textContent = '🔊';
           unmuteBadgeText.textContent = 'Áudio Ativado';
-          audioBtnIcon.textContent = '🔇';
-          audioBtnLabel.textContent = 'Mutar Áudio';
+          audioBtnIcon.textContent = '🔊';
+          btnToggleAudio.setAttribute('data-tooltip', 'Mutar Áudio (M)');
         }
       }
 
       function toggleAudio() {
-        if (video.muted) {
+        if (video.muted || video.volume === 0) {
           video.muted = false;
-          if (video.volume === 0) video.volume = 0.5;
-          volumeSlider.value = video.volume;
+          if (video.volume === 0) {
+            video.volume = 0.5;
+            volumeSlider.value = 0.5;
+          }
+          volumePercent.textContent = `${Math.round(video.volume * 100)}%`;
           video.play().catch(function() {});
           updateAudioState(false);
-          showToast('🔊 Áudio ativado!');
+          showToast('🔊 Áudio ativado');
         } else {
           video.muted = true;
           updateAudioState(true);
@@ -1108,11 +1312,13 @@
         const val = parseFloat(e.target.value);
         video.volume = val;
         video.muted = (val === 0);
+        volumePercent.textContent = `${Math.round(val * 100)}%`;
         updateAudioState(video.muted);
         localStorage.setItem('discord_stream_volume', val.toString());
       });
 
       video.addEventListener('volumechange', () => {
+        volumePercent.textContent = `${Math.round((video.muted ? 0 : video.volume) * 100)}%`;
         updateAudioState(video.muted || video.volume === 0);
       });
 
@@ -1132,6 +1338,20 @@
         }
       }
       btnPip.addEventListener('click', togglePiP);
+
+      // Modo Teatro (Theater Mode)
+      function toggleTheater() {
+        theaterEnabled = !theaterEnabled;
+        document.body.classList.toggle('theater-mode', theaterEnabled);
+        btnTheater.classList.toggle('active', theaterEnabled);
+        localStorage.setItem('discord_theater_mode', theaterEnabled.toString());
+        showToast(theaterEnabled ? '🎦 Modo Teatro Ativado' : 'Modo Teatro Desativado');
+      }
+      btnTheater.addEventListener('click', toggleTheater);
+      if (theaterEnabled) {
+        document.body.classList.add('theater-mode');
+        btnTheater.classList.add('active');
+      }
 
       // Fullscreen
       function toggleFullscreen() {
@@ -1154,12 +1374,12 @@
       btnFullscreen.addEventListener('click', toggleFullscreen);
       video.addEventListener('dblclick', toggleFullscreen);
 
-      // Integrated Controls On-Hover Management
+      // On-Hover Integrated Controls Fade
       function showControls() {
         playerControls.classList.remove('fade-out');
         if (controlsTimeout) clearTimeout(controlsTimeout);
         controlsTimeout = setTimeout(() => {
-          if (!video.paused && !reactionMenu.classList.contains('expanded')) {
+          if (!video.paused && !reactionMenu.classList.contains('expanded') && !qualityDropdown.classList.contains('show')) {
             playerControls.classList.add('fade-out');
           }
         }, 2800);
@@ -1168,7 +1388,7 @@
       playerContainer.addEventListener('mousemove', showControls);
       playerContainer.addEventListener('mouseenter', showControls);
       playerContainer.addEventListener('mouseleave', () => {
-        if (!video.paused && !reactionMenu.classList.contains('expanded')) {
+        if (!video.paused && !reactionMenu.classList.contains('expanded') && !qualityDropdown.classList.contains('show')) {
           playerControls.classList.add('fade-out');
         }
       });
@@ -1178,7 +1398,6 @@
         if (!statsEnabled) return;
         if (video.videoWidth) {
           statRes.textContent = `${video.videoWidth}x${video.videoHeight}`;
-          resolutionInfo.textContent = `${video.videoHeight}p 60fps`;
         }
         if (video.getVideoPlaybackQuality) {
           const q = video.getVideoPlaybackQuality();
@@ -1235,7 +1454,55 @@
       } else {
         ambientCanvas.classList.add('hidden');
       }
-      ambientTimer = setInterval(drawAmbient, 90);
+      ambientTimer = setInterval(drawAmbient, 85);
+
+      // Menu de Qualidade Estilo Kick
+      btnQuality.addEventListener('click', (e) => {
+        e.stopPropagation();
+        qualityDropdown.classList.toggle('show');
+        showControls();
+      });
+
+      document.addEventListener('click', (e) => {
+        if (!e.target.closest('.quality-menu-wrap')) {
+          qualityDropdown.classList.remove('show');
+        }
+      });
+
+      function buildQualityMenu() {
+        if (!hlsInstance) return;
+        qualityOptions.innerHTML = '';
+
+        // Opção Auto
+        const autoBtn = document.createElement('button');
+        autoBtn.className = `quality-item ${hlsInstance.currentLevel === -1 ? 'active' : ''}`;
+        autoBtn.innerHTML = `<span>Auto</span><span>${hlsInstance.currentLevel === -1 ? '✓' : ''}</span>`;
+        autoBtn.onclick = () => {
+          hlsInstance.currentLevel = -1;
+          buildQualityMenu();
+          qualityDropdown.classList.remove('show');
+          showToast('Qualidade: Automática');
+        };
+        qualityOptions.appendChild(autoBtn);
+
+        // Níveis reais do Hls.js
+        if (hlsInstance.levels && hlsInstance.levels.length > 0) {
+          hlsInstance.levels.forEach((level, idx) => {
+            const btn = document.createElement('button');
+            const isActive = hlsInstance.currentLevel === idx;
+            btn.className = `quality-item ${isActive ? 'active' : ''}`;
+            const label = level.height ? `${level.height}p60` : `Nível ${idx + 1}`;
+            btn.innerHTML = `<span>${label}</span><span>${isActive ? '✓' : ''}</span>`;
+            btn.onclick = () => {
+              hlsInstance.currentLevel = idx;
+              buildQualityMenu();
+              qualityDropdown.classList.remove('show');
+              showToast(`Qualidade: ${label}`);
+            };
+            qualityOptions.appendChild(btn);
+          });
+        }
+      }
 
       // Compact Expandable Reaction Dock
       btnReactionTrigger.addEventListener('click', (e) => {
@@ -1307,7 +1574,7 @@
         btnToggleSidebar.textContent = sidebar.classList.contains('collapsed') ? '▶' : '◀';
       });
 
-      // Multi-View: Atualiza sidebar com canais ao vivo
+      // Sidebar: Busca lives ativas no servidor
       async function updateSidebarChannels() {
         try {
           const res = await fetch('/api/streams/active');
@@ -1321,23 +1588,29 @@
           if (data.streams && data.streams.length > 0) {
             data.streams.forEach(s => {
               const item = document.createElement('a');
-              item.className = `channel-item ${s.userId === currentId ? 'active' : ''}`;
+              const isCur = s.userId === currentId;
+              item.className = `channel-item ${isCur ? 'active' : ''}`;
               item.href = s.watchUrl;
+
+              const avatarHtml = s.streamerAvatar
+                ? `<img src="${s.streamerAvatar}" class="channel-avatar-img" alt="${s.streamerName}">`
+                : `<span>👤</span>`;
+
               item.innerHTML = `
-                <div class="channel-avatar">
-                  <span>👤</span>
+                <div class="channel-avatar-wrap">
+                  ${avatarHtml}
                   <span class="avatar-live-indicator"></span>
                 </div>
                 <div class="channel-info">
                   <div class="channel-name">${s.streamerName}</div>
-                  <div class="channel-call">Transmissão de Tela</div>
+                  <div class="channel-call">${s.voiceChannelName || 'Transmissão de Tela'}</div>
                 </div>
               `;
               sidebarChannels.appendChild(item);
             });
           } else {
             sidebarChannels.innerHTML = `
-              <div style="padding: 12px 10px; font-size: 0.78rem; color: var(--text-muted); text-align: center;">
+              <div style="padding: 14px 10px; font-size: 0.78rem; color: var(--text-muted); text-align: center;">
                 Nenhuma outra live ativa no momento.
               </div>
             `;
@@ -1364,6 +1637,9 @@
         } else if (key === 'p') {
           e.preventDefault();
           togglePiP();
+        } else if (key === 't') {
+          e.preventDefault();
+          toggleTheater();
         } else if (key === 'm') {
           e.preventDefault();
           toggleAudio();
@@ -1378,13 +1654,15 @@
           helpModal.classList.toggle('hidden');
         } else if (e.key === 'ArrowUp') {
           e.preventDefault();
-          video.volume = Math.min(1, video.volume + 0.1);
+          video.volume = Math.min(1, parseFloat((video.volume + 0.05).toFixed(2)));
           volumeSlider.value = video.volume;
+          volumePercent.textContent = `${Math.round(video.volume * 100)}%`;
           showToast(`Volume: ${Math.round(video.volume * 100)}%`);
         } else if (e.key === 'ArrowDown') {
           e.preventDefault();
-          video.volume = Math.max(0, video.volume - 0.1);
+          video.volume = Math.max(0, parseFloat((video.volume - 0.05).toFixed(2)));
           volumeSlider.value = video.volume;
+          volumePercent.textContent = `${Math.round(video.volume * 100)}%`;
           showToast(`Volume: ${Math.round(video.volume * 100)}%`);
         } else if (['1', '2', '3', '4', '5'].includes(e.key)) {
           const emojis = ['🔥', '💀', '😂', '👏', '🎯'];
@@ -1477,6 +1755,7 @@
 
           hlsInstance.on(Hls.Events.MANIFEST_PARSED, () => {
             console.log('HLS Manifest carregado com sucesso!');
+            buildQualityMenu();
             video.play().catch((err) => {
               console.log('Autoplay mutado pelo navegador:', err);
               video.muted = true;

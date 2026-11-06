@@ -146,6 +146,21 @@ async function startStreamSession(client, streamData) {
   let changedNickname = false;
   let voiceChannelId = null;
   let voiceChannelName = 'Chamada';
+  let streamerName = 'Streamer';
+  let streamerAvatar = null;
+
+  try {
+    const user = client.users?.cache?.get(userId)
+      || (client.users?.fetch ? await client.users.fetch(userId).catch(() => null) : null);
+    if (user) {
+      streamerAvatar = typeof user.displayAvatarURL === 'function' ? user.displayAvatarURL({ size: 128, extension: 'png' }) : null;
+      streamerName = member?.displayName || user.globalName || user.username || 'Streamer';
+    } else if (member) {
+      streamerName = member.displayName || 'Streamer';
+    }
+  } catch (err) {
+    console.warn('[StreamManager] Não foi possível obter perfil do usuário:', err.message);
+  }
 
   if (member && guild) {
     voiceChannelId = member.voice?.channel?.id || null;
@@ -247,6 +262,8 @@ async function startStreamSession(client, streamData) {
     messageId,
     voiceChannelId,
     voiceChannelName,
+    streamerName,
+    streamerAvatar,
     guildId: guild?.id || null,
     originalNickname,
     changedNickname,
