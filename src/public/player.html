@@ -86,121 +86,183 @@
     }
 
     @keyframes pulse {
-      0%, 100% {
-        transform: scale(1);
-        opacity: 1;
-      }
-      50% {
-        transform: scale(1.35);
-        opacity: 0.5;
-      }
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.35); opacity: 0.5; }
     }
 
     .title-banner {
       font-size: 1rem;
       font-weight: 600;
-      color: var(--text-main);
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 10px;
     }
 
     .streamer-pill {
-      background: rgba(255, 255, 255, 0.06);
-      padding: 3px 10px;
-      border-radius: 6px;
-      font-size: 0.85rem;
-      color: #b5bac1;
-      font-weight: 500;
       display: inline-flex;
       align-items: center;
       gap: 6px;
+      background: rgba(255, 255, 255, 0.06);
+      padding: 2px 10px;
+      border-radius: 6px;
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      border: 1px solid var(--card-border);
     }
 
-    .header-right {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-
-    /* Unmute reminder badge */
     .unmute-badge {
       display: inline-flex;
       align-items: center;
-      gap: 8px;
+      gap: 6px;
       background: var(--unmute-bg);
       border: 1px solid var(--unmute-border);
       color: var(--unmute-text);
-      font-size: 0.85rem;
+      font-size: 0.82rem;
       font-weight: 600;
-      padding: 5px 12px;
+      padding: 6px 12px;
       border-radius: 20px;
       cursor: pointer;
-      user-select: none;
       transition: all 0.2s ease;
+      user-select: none;
     }
 
     .unmute-badge:hover {
-      background: rgba(240, 178, 50, 0.28);
-      transform: translateY(-1px);
+      filter: brightness(1.15);
     }
 
     .unmute-badge.active-audio {
-      background: rgba(35, 165, 90, 0.15);
-      border-color: rgba(35, 165, 90, 0.35);
-      color: #23a55a;
+      background: rgba(46, 204, 113, 0.15);
+      border-color: rgba(46, 204, 113, 0.4);
+      color: #2ecc71;
     }
 
-    /* Main Video Area */
+    /* Multi-view Bar (when multiple streams are active) */
+    .multiview-bar {
+      background: #141722;
+      border-bottom: 1px solid var(--card-border);
+      padding: 8px 20px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      overflow-x: auto;
+      z-index: 9;
+      font-size: 0.85rem;
+    }
+
+    .multiview-label {
+      color: var(--text-muted);
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    .multiview-list {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .multiview-btn {
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid var(--card-border);
+      color: var(--text-main);
+      padding: 4px 10px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.8rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.15s ease;
+      white-space: nowrap;
+      text-decoration: none;
+    }
+
+    .multiview-btn:hover {
+      background: rgba(255, 255, 255, 0.12);
+    }
+
+    .multiview-btn.active {
+      background: var(--accent-discord);
+      border-color: var(--accent-discord);
+      color: #fff;
+      font-weight: 600;
+    }
+
+    /* Main Content / Player Area */
     main {
       flex: 1;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      padding: 16px;
+      padding: 16px 20px;
       width: 100%;
-      max-width: 1400px;
+      max-width: 1500px;
       margin: 0 auto;
+      position: relative;
+    }
+
+    .player-wrapper {
+      position: relative;
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    /* Ambient Glow Canvas */
+    .ambient-glow {
+      position: absolute;
+      top: -6%;
+      left: -6%;
+      width: 112%;
+      height: 112%;
+      filter: blur(70px);
+      opacity: 0.45;
+      pointer-events: none;
+      z-index: 0;
+      transition: opacity 0.4s ease;
+      border-radius: 24px;
+    }
+
+    .ambient-glow.hidden {
+      opacity: 0;
     }
 
     .player-container {
-      width: 100%;
       position: relative;
-      background: #000;
+      width: 100%;
+      max-width: 1380px;
+      aspect-ratio: 16 / 9;
+      background-color: #000;
       border-radius: 12px;
       overflow: hidden;
-      aspect-ratio: 16 / 9;
-      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.7);
       border: 1px solid var(--card-border);
+      box-shadow: 0 12px 36px rgba(0, 0, 0, 0.6);
       display: flex;
       align-items: center;
       justify-content: center;
+      z-index: 1;
     }
 
     video {
       width: 100%;
       height: 100%;
-      display: block;
-      background: #000;
       object-fit: contain;
+      background: #000;
+      display: block;
     }
 
-    /* Overlay banners & status inside player */
+    /* Overlays */
     .overlay-message {
       position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: rgba(14, 16, 21, 0.88);
-      backdrop-filter: blur(4px);
+      inset: 0;
+      background: rgba(14, 16, 21, 0.9);
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      gap: 14px;
-      color: var(--text-main);
+      gap: 12px;
       z-index: 5;
       padding: 24px;
       text-align: center;
@@ -213,10 +275,10 @@
     .spinner {
       width: 44px;
       height: 44px;
-      border: 3px solid rgba(255, 255, 255, 0.1);
+      border: 3px solid rgba(255, 255, 255, 0.15);
       border-top-color: var(--accent-discord);
       border-radius: 50%;
-      animation: spin 1s infinite linear;
+      animation: spin 0.8s linear infinite;
     }
 
     @keyframes spin {
@@ -232,21 +294,130 @@
       font-size: 0.9rem;
       color: var(--text-muted);
       max-width: 420px;
+      line-height: 1.4;
+    }
+
+    /* Stats for Nerds HUD */
+    .stats-overlay {
+      position: absolute;
+      top: 14px;
+      left: 14px;
+      background: rgba(10, 12, 16, 0.88);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 8px;
+      padding: 10px 14px;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 0.76rem;
+      color: #e1e4ea;
+      line-height: 1.5;
+      z-index: 8;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.5);
+      user-select: none;
+      pointer-events: none;
+    }
+
+    .stats-overlay.hidden {
+      display: none;
+    }
+
+    .stats-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    .stats-key {
+      color: var(--text-muted);
+    }
+
+    .stats-val {
+      font-weight: 600;
+      color: #57f287;
+    }
+
+    /* Floating Reaction Dock */
+    .reaction-dock {
+      position: absolute;
+      right: 12px;
+      bottom: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      z-index: 8;
+      background: rgba(20, 23, 32, 0.85);
+      backdrop-filter: blur(8px);
+      border: 1px solid var(--card-border);
+      padding: 6px 4px;
+      border-radius: 24px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+      user-select: none;
+    }
+
+    .reaction-btn {
+      background: none;
+      border: none;
+      font-size: 1.3rem;
+      cursor: pointer;
+      padding: 4px;
+      border-radius: 50%;
+      transition: transform 0.12s ease;
+      line-height: 1;
+    }
+
+    .reaction-btn:hover {
+      transform: scale(1.35);
+    }
+
+    .reaction-btn:active {
+      transform: scale(0.9);
+    }
+
+    .reaction-container {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      overflow: hidden;
+      z-index: 7;
+    }
+
+    .floating-emoji {
+      position: absolute;
+      bottom: 24px;
+      right: 60px;
+      font-size: 2.2rem;
+      animation: floatReaction 2.2s ease-out forwards;
+      pointer-events: none;
+    }
+
+    @keyframes floatReaction {
+      0% {
+        transform: translateY(0) scale(0.6);
+        opacity: 0;
+      }
+      15% {
+        opacity: 1;
+        transform: translateY(-20px) scale(1.2);
+      }
+      80% {
+        opacity: 0.9;
+      }
+      100% {
+        transform: translateY(-240px) translateX(var(--drift, 0px)) scale(1.4);
+        opacity: 0;
+      }
     }
 
     /* Action Controls Bar */
     .controls-bar {
       width: 100%;
-      margin-top: 14px;
+      max-width: 1380px;
+      margin-top: 12px;
       display: flex;
       align-items: center;
       justify-content: space-between;
+      gap: 16px;
       flex-wrap: wrap;
-      gap: 12px;
-      padding: 10px 14px;
-      background: var(--card-bg);
-      border: 1px solid var(--card-border);
-      border-radius: 10px;
     }
 
     .controls-left, .controls-right {
@@ -256,18 +427,40 @@
       flex-wrap: wrap;
     }
 
+    .volume-group {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--btn-bg);
+      border: 1px solid var(--card-border);
+      padding: 0 10px 0 0;
+      border-radius: 8px;
+    }
+
+    .volume-group .btn {
+      border: none;
+      background: transparent;
+    }
+
+    .volume-slider {
+      width: 70px;
+      height: 5px;
+      accent-color: var(--accent-discord);
+      cursor: pointer;
+    }
+
     .btn {
       background: var(--btn-bg);
       color: var(--text-main);
       border: 1px solid var(--card-border);
-      padding: 8px 16px;
+      padding: 8px 14px;
       font-size: 0.88rem;
       font-weight: 500;
       border-radius: 8px;
       cursor: pointer;
       display: inline-flex;
       align-items: center;
-      gap: 8px;
+      gap: 6px;
       user-select: none;
       transition: all 0.2s ease;
       text-decoration: none;
@@ -281,6 +474,12 @@
 
     .btn:active {
       transform: translateY(0);
+    }
+
+    .btn.active {
+      background: var(--accent-discord);
+      border-color: var(--accent-discord);
+      color: #fff;
     }
 
     .btn-primary {
@@ -308,6 +507,75 @@
       background-color: var(--live-red);
     }
 
+    /* Modal de Atalhos de Teclado */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.75);
+      backdrop-filter: blur(6px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+    }
+
+    .modal-overlay.hidden {
+      display: none !important;
+    }
+
+    .modal-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border-hover);
+      border-radius: 12px;
+      width: 90%;
+      max-width: 460px;
+      padding: 20px;
+      box-shadow: 0 12px 36px rgba(0, 0, 0, 0.7);
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 14px;
+    }
+
+    .modal-header h3 {
+      font-size: 1.1rem;
+    }
+
+    .btn-close {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      font-size: 1.2rem;
+      cursor: pointer;
+    }
+
+    .btn-close:hover {
+      color: #fff;
+    }
+
+    .shortcut-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 7px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      font-size: 0.86rem;
+    }
+
+    kbd {
+      background: #232734;
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      border-radius: 4px;
+      padding: 2px 7px;
+      font-family: monospace;
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: #fff;
+    }
+
     /* Toast Notification */
     .toast {
       position: fixed;
@@ -316,9 +584,9 @@
       background: #1c202d;
       color: var(--text-main);
       border: 1px solid var(--card-border);
-      padding: 12px 20px;
+      padding: 10px 18px;
       border-radius: 8px;
-      font-size: 0.9rem;
+      font-size: 0.88rem;
       box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
       display: flex;
       align-items: center;
@@ -336,13 +604,13 @@
       transform: translateY(0);
     }
 
+    .hidden {
+      display: none !important;
+    }
+
     @media (max-width: 680px) {
-      header {
-        padding: 10px 14px;
-      }
-      main {
-        padding: 10px;
-      }
+      header { padding: 10px 14px; }
+      main { padding: 10px; }
       .controls-bar {
         flex-direction: column;
         align-items: stretch;
@@ -350,9 +618,8 @@
       .controls-left, .controls-right {
         justify-content: center;
       }
-      .title-banner {
-        font-size: 0.9rem;
-      }
+      .volume-slider { width: 50px; }
+      .title-banner { font-size: 0.9rem; }
     }
   </style>
 </head>
@@ -381,26 +648,59 @@
     </div>
   </header>
 
+  <!-- Multi-view Bar (mostra quando há mais de 1 transmissão ativa) -->
+  <nav class="multiview-bar hidden" id="multiview-bar">
+    <span class="multiview-label">📡 Outras Transmissões:</span>
+    <div class="multiview-list" id="multiview-list"></div>
+  </nav>
+
   <!-- Main Content / Player Area -->
   <main>
-    <div class="player-container" id="player-container">
-      <video id="video" playsinline controls autoplay muted></video>
+    <div class="player-wrapper">
+      <!-- Canvas de Luz Ambiente (Glow) -->
+      <canvas id="ambient-canvas" class="ambient-glow" width="32" height="18"></canvas>
 
-      <!-- Loading / Buffering Overlay -->
-      <div id="loading-overlay" class="overlay-message">
-        <div class="spinner"></div>
-        <div class="overlay-title">Conectando à transmissão...</div>
-        <div class="overlay-sub">Sincronizando sinal de vídeo em baixa latência (LL-HLS)</div>
-      </div>
+      <div class="player-container" id="player-container">
+        <video id="video" playsinline controls autoplay muted></video>
 
-      <!-- Error / Offline Overlay -->
-      <div id="error-overlay" class="overlay-message hidden">
-        <div style="font-size: 2.5rem;">⚠️</div>
-        <div class="overlay-title" id="error-title">Sinal Interrompido</div>
-        <div class="overlay-sub" id="error-sub">Não foi possível carregar a transmissão. Aguardando novo sinal ou tentativa de reconexão...</div>
-        <div style="display: flex; gap: 10px; margin-top: 8px;">
-          <button class="btn btn-primary" id="btn-reconnect">🔄 Reconectar Agora</button>
-          <a class="btn" href="offline.html" id="btn-offline-link">Ver Status</a>
+        <!-- Stats for Nerds HUD -->
+        <div id="stats-overlay" class="stats-overlay hidden">
+          <div class="stats-row"><span class="stats-key">Resolução:</span><span class="stats-val" id="stat-res">1920x1080</span></div>
+          <div class="stats-row"><span class="stats-key">FPS:</span><span class="stats-val" id="stat-fps">60 FPS</span></div>
+          <div class="stats-row"><span class="stats-key">Bitrate:</span><span class="stats-val" id="stat-bitrate">--</span></div>
+          <div class="stats-row"><span class="stats-key">Latência HLS:</span><span class="stats-val" id="stat-latency">--</span></div>
+          <div class="stats-row"><span class="stats-key">Buffer:</span><span class="stats-val" id="stat-buffer">--</span></div>
+          <div class="stats-row"><span class="stats-key">Quadros Perdidos:</span><span class="stats-val" id="stat-dropped">0</span></div>
+        </div>
+
+        <!-- Container de Emojis Flutuantes -->
+        <div id="reaction-container" class="reaction-container"></div>
+
+        <!-- Dock de Reações Rápidas -->
+        <div class="reaction-dock" id="reaction-dock" title="Reações ao vivo (Teclas 1 a 5)">
+          <button class="reaction-btn" data-emoji="🔥" title="Fogo! (Tecla 1)">🔥</button>
+          <button class="reaction-btn" data-emoji="💀" title="Caveira (Tecla 2)">💀</button>
+          <button class="reaction-btn" data-emoji="😂" title="Rindo (Tecla 3)">😂</button>
+          <button class="reaction-btn" data-emoji="👏" title="Palmas (Tecla 4)">👏</button>
+          <button class="reaction-btn" data-emoji="🎯" title="Na mosca! (Tecla 5)">🎯</button>
+        </div>
+
+        <!-- Loading Overlay -->
+        <div id="loading-overlay" class="overlay-message">
+          <div class="spinner"></div>
+          <div class="overlay-title">Conectando à transmissão...</div>
+          <div class="overlay-sub">Sincronizando sinal de vídeo em baixa latência (LL-HLS)</div>
+        </div>
+
+        <!-- Error Overlay -->
+        <div id="error-overlay" class="overlay-message hidden">
+          <div style="font-size: 2.5rem;">⚠️</div>
+          <div class="overlay-title" id="error-title">Sinal Interrompido</div>
+          <div class="overlay-sub" id="error-sub">Não foi possível carregar a transmissão. Aguardando novo sinal ou tentativa de reconexão...</div>
+          <div style="display: flex; gap: 10px; margin-top: 8px;">
+            <button class="btn btn-primary" id="btn-reconnect">🔄 Reconectar Agora</button>
+            <a class="btn" href="offline.html" id="btn-offline-link">Ver Status</a>
+          </div>
         </div>
       </div>
     </div>
@@ -408,17 +708,37 @@
     <!-- Actions & Controls Bar -->
     <div class="controls-bar">
       <div class="controls-left">
-        <button class="btn" id="btn-toggle-audio">
-          <span id="audio-btn-icon">🔊</span>
-          <span id="audio-btn-label">Desmutar Áudio</span>
-        </button>
-        <button class="btn" id="btn-pip">
+        <!-- Grupo de Volume com Slider -->
+        <div class="volume-group">
+          <button class="btn" id="btn-toggle-audio" title="Alternar Áudio (Tecla M)">
+            <span id="audio-btn-icon">🔊</span>
+            <span id="audio-btn-label">Desmutar Áudio</span>
+          </button>
+          <input type="range" class="volume-slider" id="volume-slider" min="0" max="1" step="0.05" value="1" title="Volume">
+        </div>
+
+        <button class="btn" id="btn-pip" title="Janela Flutuante (Tecla P)">
           <span>🖼️</span>
           <span>Janela Flutuante (PiP)</span>
         </button>
-        <button class="btn" id="btn-fullscreen">
+
+        <button class="btn" id="btn-fullscreen" title="Tela Cheia (Tecla F)">
           <span>⛶</span>
           <span>Tela Cheia</span>
+        </button>
+
+        <button class="btn" id="btn-stats" title="Estatísticas Técnicas (Tecla S)">
+          <span>📊</span>
+          <span>Stats</span>
+        </button>
+
+        <button class="btn" id="btn-ambient" title="Modo Cinema com Luz Ambiente (Tecla A)">
+          <span>✨</span>
+          <span>Glow</span>
+        </button>
+
+        <button class="btn" id="btn-help" title="Atalhos de Teclado (Tecla ?)">
+          <span>⌨️</span>
         </button>
       </div>
 
@@ -432,6 +752,26 @@
       </div>
     </div>
   </main>
+
+  <!-- Modal de Ajuda com Atalhos de Teclado -->
+  <div id="help-modal" class="modal-overlay hidden">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>⌨️ Atalhos de Teclado Gamers</h3>
+        <button class="btn-close" id="btn-close-help">✕</button>
+      </div>
+      <div class="modal-body">
+        <div class="shortcut-row"><span>Alternar Tela Cheia</span><kbd>F</kbd></div>
+        <div class="shortcut-row"><span>Janela Flutuante (PiP)</span><kbd>P</kbd></div>
+        <div class="shortcut-row"><span>Mutar / Desmutar Áudio</span><kbd>M</kbd></div>
+        <div class="shortcut-row"><span>Aumentar / Diminuir Volume</span><span><kbd>↑</kbd> <kbd>↓</kbd></span></div>
+        <div class="shortcut-row"><span>Estatísticas da Live (Stats)</span><kbd>S</kbd></div>
+        <div class="shortcut-row"><span>Luz Ambiente (Modo Cinema)</span><kbd>A</kbd></div>
+        <div class="shortcut-row"><span>Enviar Reações Rápidas</span><span><kbd>1</kbd> até <kbd>5</kbd></span></div>
+        <div class="shortcut-row"><span>Abrir / Fechar esta ajuda</span><span><kbd>?</kbd> ou <kbd>H</kbd></span></div>
+      </div>
+    </div>
+  </div>
 
   <!-- Notification Toast -->
   <div id="toast" class="toast">
@@ -453,35 +793,71 @@
       const btnToggleAudio = document.getElementById('btn-toggle-audio');
       const audioBtnIcon = document.getElementById('audio-btn-icon');
       const audioBtnLabel = document.getElementById('audio-btn-label');
+      const volumeSlider = document.getElementById('volume-slider');
       const btnPip = document.getElementById('btn-pip');
       const btnFullscreen = document.getElementById('btn-fullscreen');
+      const btnStats = document.getElementById('btn-stats');
+      const btnAmbient = document.getElementById('btn-ambient');
+      const btnHelp = document.getElementById('btn-help');
+      const btnCloseHelp = document.getElementById('btn-close-help');
+      const helpModal = document.getElementById('help-modal');
+      const statsOverlay = document.getElementById('stats-overlay');
+      const ambientCanvas = document.getElementById('ambient-canvas');
+      const reactionDock = document.getElementById('reaction-dock');
+      const reactionContainer = document.getElementById('reaction-container');
+      const multiviewBar = document.getElementById('multiview-bar');
+      const multiviewList = document.getElementById('multiview-list');
       const btnReconnect = document.getElementById('btn-reconnect');
       const streamerNameEl = document.getElementById('streamer-name');
+      const resolutionInfo = document.getElementById('resolution-info');
       const toast = document.getElementById('toast');
       const toastMessage = document.getElementById('toast-message');
+
+      // Stats Elements
+      const statRes = document.getElementById('stat-res');
+      const statFps = document.getElementById('stat-fps');
+      const statBitrate = document.getElementById('stat-bitrate');
+      const statLatency = document.getElementById('stat-latency');
+      const statBuffer = document.getElementById('stat-buffer');
+      const statDropped = document.getElementById('stat-dropped');
 
       let hlsInstance = null;
       let reconnectAttempts = 0;
       let reconnectTimer = null;
       let toastTimer = null;
+      let statsTimer = null;
+      let ambientTimer = null;
+      let ambientCtx = ambientCanvas.getContext('2d', { willReadFrequently: true });
+      let ambientEnabled = localStorage.getItem('discord_ambient_glow') !== 'false';
+      let statsEnabled = false;
       const MAX_RECONNECT_ATTEMPTS = 15;
 
-      // Extract query parameters
+      // Extract parameters
       const urlParams = new URLSearchParams(window.location.search);
-      const streamSrc = urlParams.get('src') || (window.__STREAM_SRC__ || '').trim();
-      const streamerParam = urlParams.get('streamer') || urlParams.get('user') || urlParams.get('name');
+      let streamSrc = urlParams.get('src') || (window.__STREAM_SRC__ || '').trim();
+      const streamerParam = urlParams.get('streamer') || urlParams.get('user') || urlParams.get('name') || window.__STREAMER_NAME__;
 
       if (streamerParam) {
         streamerNameEl.textContent = streamerParam;
       }
 
-      function showToast(message, duration = 3000) {
+      function showToast(message, duration = 2800) {
         if (toastTimer) clearTimeout(toastTimer);
         toastMessage.textContent = message;
         toast.classList.add('show');
         toastTimer = setTimeout(() => {
           toast.classList.remove('show');
         }, duration);
+      }
+
+      // Restaura volume salvo
+      const savedVolume = localStorage.getItem('discord_stream_volume');
+      if (savedVolume !== null) {
+        const v = parseFloat(savedVolume);
+        if (!isNaN(v)) {
+          video.volume = v;
+          volumeSlider.value = v;
+        }
       }
 
       function updateAudioState(isMuted) {
@@ -503,7 +879,8 @@
       function toggleAudio() {
         if (video.muted) {
           video.muted = false;
-          video.volume = 1.0;
+          if (video.volume === 0) video.volume = 0.5;
+          volumeSlider.value = video.volume;
           video.play().catch(function() {});
           updateAudioState(false);
           showToast('🔊 Áudio ativado!');
@@ -517,12 +894,20 @@
       unmuteBadge.addEventListener('click', toggleAudio);
       btnToggleAudio.addEventListener('click', toggleAudio);
 
+      volumeSlider.addEventListener('input', (e) => {
+        const val = parseFloat(e.target.value);
+        video.volume = val;
+        video.muted = (val === 0);
+        updateAudioState(video.muted);
+        localStorage.setItem('discord_stream_volume', val.toString());
+      });
+
       video.addEventListener('volumechange', () => {
         updateAudioState(video.muted || video.volume === 0);
       });
 
       // Picture-in-Picture
-      btnPip.addEventListener('click', async () => {
+      async function togglePiP() {
         try {
           if (document.pictureInPictureElement) {
             await document.exitPictureInPicture();
@@ -535,10 +920,11 @@
           console.warn('PiP error:', err);
           showToast('Não foi possível ativar Janela Flutuante.');
         }
-      });
+      }
+      btnPip.addEventListener('click', togglePiP);
 
       // Fullscreen
-      btnFullscreen.addEventListener('click', () => {
+      function toggleFullscreen() {
         if (!document.fullscreenElement) {
           if (playerContainer.requestFullscreen) {
             playerContainer.requestFullscreen();
@@ -554,7 +940,199 @@
             document.webkitExitFullscreen();
           }
         }
+      }
+      btnFullscreen.addEventListener('click', toggleFullscreen);
+      video.addEventListener('dblclick', toggleFullscreen);
+
+      // Stats for Nerds
+      function updateStats() {
+        if (!statsEnabled) return;
+        if (video.videoWidth) {
+          statRes.textContent = `${video.videoWidth}x${video.videoHeight}`;
+          resolutionInfo.textContent = `${video.videoHeight}p 60fps`;
+        }
+        if (video.getVideoPlaybackQuality) {
+          const q = video.getVideoPlaybackQuality();
+          statDropped.textContent = q.droppedVideoFrames || 0;
+        }
+        if (hlsInstance) {
+          if (hlsInstance.bandwidthEstimate) {
+            statBitrate.textContent = `${(hlsInstance.bandwidthEstimate / 1000000).toFixed(1)} Mbps`;
+          }
+          if (hlsInstance.latency) {
+            statLatency.textContent = `${hlsInstance.latency.toFixed(1)}s`;
+          }
+        }
+        if (video.buffered && video.buffered.length > 0) {
+          const bufEnd = video.buffered.end(video.buffered.length - 1);
+          const bufLen = Math.max(0, bufEnd - video.currentTime);
+          statBuffer.textContent = `${bufLen.toFixed(1)}s`;
+        }
+      }
+
+      function toggleStats() {
+        statsEnabled = !statsEnabled;
+        statsOverlay.classList.toggle('hidden', !statsEnabled);
+        btnStats.classList.toggle('active', statsEnabled);
+        if (statsEnabled) {
+          updateStats();
+          if (!statsTimer) statsTimer = setInterval(updateStats, 1000);
+        } else {
+          if (statsTimer) clearInterval(statsTimer);
+          statsTimer = null;
+        }
+      }
+      btnStats.addEventListener('click', toggleStats);
+
+      // Ambient Glow Mode
+      function drawAmbient() {
+        if (!ambientEnabled || video.paused || video.ended || !video.videoWidth) return;
+        try {
+          ambientCtx.drawImage(video, 0, 0, 32, 18);
+        } catch (e) {}
+      }
+
+      function toggleAmbient() {
+        ambientEnabled = !ambientEnabled;
+        ambientCanvas.classList.toggle('hidden', !ambientEnabled);
+        btnAmbient.classList.toggle('active', ambientEnabled);
+        localStorage.setItem('discord_ambient_glow', ambientEnabled.toString());
+        showToast(ambientEnabled ? '✨ Luz Ambiente Ativada' : 'Luz Ambiente Desativada');
+      }
+      btnAmbient.addEventListener('click', toggleAmbient);
+      if (ambientEnabled) {
+        btnAmbient.classList.add('active');
+        ambientCanvas.classList.remove('hidden');
+      } else {
+        ambientCanvas.classList.add('hidden');
+      }
+      ambientTimer = setInterval(drawAmbient, 100);
+
+      // Reações Rápidas Flutuantes
+      function triggerFloatingReaction(emoji) {
+        const el = document.createElement('div');
+        el.className = 'floating-emoji';
+        el.textContent = emoji;
+        const drift = (Math.random() * 80 - 40).toFixed(0);
+        el.style.setProperty('--drift', `${drift}px`);
+        reactionContainer.appendChild(el);
+        setTimeout(() => el.remove(), 2400);
+
+        // Notifica o servidor para outros espectadores
+        const parts = window.location.pathname.split('/');
+        const streamKey = parts[parts.length - 1];
+        if (streamKey) {
+          fetch(`/api/stream/${streamKey}/react`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ emoji })
+          }).catch(function() {});
+        }
+      }
+
+      reactionDock.addEventListener('click', (e) => {
+        const btn = e.target.closest('.reaction-btn');
+        if (btn && btn.dataset.emoji) {
+          triggerFloatingReaction(btn.dataset.emoji);
+        }
       });
+
+      // Conecta ao feed de reações via SSE
+      try {
+        const parts = window.location.pathname.split('/');
+        const streamKey = parts[parts.length - 1];
+        if (streamKey && window.EventSource) {
+          const sse = new EventSource(`/api/stream/${streamKey}/reactions`);
+          sse.onmessage = (event) => {
+            try {
+              const data = JSON.parse(event.data);
+              if (data.emoji) {
+                const el = document.createElement('div');
+                el.className = 'floating-emoji';
+                el.textContent = data.emoji;
+                const drift = (Math.random() * 80 - 40).toFixed(0);
+                el.style.setProperty('--drift', `${drift}px`);
+                reactionContainer.appendChild(el);
+                setTimeout(() => el.remove(), 2400);
+              }
+            } catch (e) {}
+          };
+        }
+      } catch (e) {}
+
+      // Atalhos de Teclado Gamers
+      btnHelp.addEventListener('click', () => helpModal.classList.remove('hidden'));
+      btnCloseHelp.addEventListener('click', () => helpModal.classList.add('hidden'));
+      helpModal.addEventListener('click', (e) => {
+        if (e.target === helpModal) helpModal.classList.add('hidden');
+      });
+
+      document.addEventListener('keydown', (e) => {
+        // Ignora se estiver digitando em input
+        if (['INPUT', 'TEXTAREA'].includes(document.activeElement?.tagName)) return;
+
+        const key = e.key.toLowerCase();
+        if (key === 'f') {
+          e.preventDefault();
+          toggleFullscreen();
+        } else if (key === 'p') {
+          e.preventDefault();
+          togglePiP();
+        } else if (key === 'm') {
+          e.preventDefault();
+          toggleAudio();
+        } else if (key === 's') {
+          e.preventDefault();
+          toggleStats();
+        } else if (key === 'a') {
+          e.preventDefault();
+          toggleAmbient();
+        } else if (key === '?' || key === 'h') {
+          e.preventDefault();
+          helpModal.classList.toggle('hidden');
+        } else if (e.key === 'ArrowUp') {
+          e.preventDefault();
+          video.volume = Math.min(1, video.volume + 0.1);
+          volumeSlider.value = video.volume;
+          showToast(`Volume: ${Math.round(video.volume * 100)}%`);
+        } else if (e.key === 'ArrowDown') {
+          e.preventDefault();
+          video.volume = Math.max(0, video.volume - 0.1);
+          volumeSlider.value = video.volume;
+          showToast(`Volume: ${Math.round(video.volume * 100)}%`);
+        } else if (['1', '2', '3', '4', '5'].includes(e.key)) {
+          const emojis = ['🔥', '💀', '😂', '👏', '🎯'];
+          const idx = parseInt(e.key, 10) - 1;
+          if (emojis[idx]) triggerFloatingReaction(emojis[idx]);
+        }
+      });
+
+      // Multi-View: Atualiza lista de streams ativas
+      async function updateActiveStreams() {
+        try {
+          const res = await fetch('/api/streams/active');
+          if (!res.ok) return;
+          const data = await res.json();
+          if (data.streams && data.streams.length > 1) {
+            multiviewBar.classList.remove('hidden');
+            multiviewList.innerHTML = '';
+            const currentParts = window.location.pathname.split('/');
+            const currentId = currentParts[currentParts.length - 1];
+
+            data.streams.forEach(s => {
+              const a = document.createElement('a');
+              a.className = `multiview-btn ${s.userId === currentId ? 'active' : ''}`;
+              a.href = s.watchUrl;
+              a.innerHTML = `🔴 <b>${s.streamerName}</b>`;
+              multiviewList.appendChild(a);
+            });
+          } else {
+            multiviewBar.classList.add('hidden');
+          }
+        } catch (e) {}
+      }
+      updateActiveStreams();
+      setInterval(updateActiveStreams, 15000);
 
       // Video Event Listeners for Loading States
       video.addEventListener('playing', () => {
@@ -573,7 +1151,6 @@
         loadingOverlay.classList.add('hidden');
       });
 
-      // Observador de status do vídeo
       video.addEventListener('stalled', () => {
         console.log('Buffering live stream frames...');
       });
@@ -609,12 +1186,9 @@
         loadingOverlay.classList.remove('hidden');
         errorOverlay.classList.add('hidden');
 
-        // Check for Hls.js support
         if (window.Hls && Hls.isSupported()) {
           if (hlsInstance) {
-            try {
-              hlsInstance.destroy();
-            } catch (e) {}
+            try { hlsInstance.destroy(); } catch (e) {}
             hlsInstance = null;
           }
 
@@ -645,7 +1219,7 @@
           hlsInstance.on(Hls.Events.MANIFEST_PARSED, () => {
             console.log('HLS Manifest carregado com sucesso!');
             video.play().catch((err) => {
-              console.log('Autoplay com áudio bloqueado pelo navegador, continuando mutado:', err);
+              console.log('Autoplay mutado pelo navegador:', err);
               video.muted = true;
               updateAudioState(true);
               video.play().catch(function() {});
@@ -655,7 +1229,6 @@
           hlsInstance.on(Hls.Events.ERROR, (event, data) => {
             console.warn('HLS Evento de Erro:', data.type, data.details, 'Fatal:', data.fatal);
 
-            // Se der 404 no manifest, alterna automaticamente entre /live/ e /live/live/ do MediaMTX
             if (data.details === 'manifestLoadError' && !triedAlternatePath) {
               triedAlternatePath = true;
               let altSrc = null;
@@ -685,47 +1258,35 @@
                   hlsInstance.recoverMediaError();
                   break;
                 default:
-                  console.log('Erro irrecuperável detectado, destruindo player e agendando reinício...');
+                  console.log('Erro irrecuperável detectado, reiniciando player...');
                   scheduleAutoReconnect(3000);
                   break;
               }
             }
           });
         } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
-          // Native HLS fallback for Safari / iOS
           console.log('Usando suporte nativo a HLS (Safari/iOS)');
           video.src = streamSrc;
           video.addEventListener('loadedmetadata', () => {
             video.play().catch((err) => {
-              console.log('Autoplay bloqueado no Safari, mantendo mutado:', err);
+              console.log('Autoplay mutado:', err);
               video.muted = true;
               updateAudioState(true);
               video.play().catch(function() {});
             });
           });
-
-          video.addEventListener('error', () => {
-            console.warn('Erro na reprodução nativa de HLS');
-            scheduleAutoReconnect(2500);
-          });
         } else {
-          showError('Navegador Incompatível', 'Seu navegador não suporta reprodução HLS nativa nem Hls.js.');
+          showError('Navegador não suportado', 'Seu navegador não possui suporte para reproduzir streams HLS.');
         }
       }
 
       btnReconnect.addEventListener('click', () => {
         reconnectAttempts = 0;
-        if (reconnectTimer) {
-          clearTimeout(reconnectTimer);
-          reconnectTimer = null;
-        }
+        showToast('Tentando reconectar agora...');
         initStream();
       });
 
-      // Initial audio check
-      updateAudioState(video.muted);
-
-      // Start Stream
+      // Inicializa a stream
       initStream();
     })();
   </script>

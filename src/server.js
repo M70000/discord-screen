@@ -98,6 +98,7 @@ function createServerInstance(options = {}) {
   const onStreamStop = options.onStreamStop || (async () => {});
 
   const publicDir = path.join(__dirname, 'public');
+  const reactionSubscribers = new Map();
 
   const server = http.createServer(async (req, res) => {
     const url = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
@@ -215,7 +216,60 @@ function createServerInstance(options = {}) {
       }
     }
 
-    // 5. Status de Stream
+    // 5. Lista de Streams Ativas (para seletor Multi-View no Player)
+    if (method === 'GET' && (pathname === '/api/streams/active' || pathname === '/api/streams')) {
+      const activeList = streamStore.getAllStreams().map(s => ({
+        userId: s.userId,
+        streamId: s.streamId,
+        streamerName: s.voiceChannelName || s.userId,
+        watchUrl: `/watch/${s.userId}`
+      }));
+      return sendJson(res, 200, {
+        count: activeList.length,
+        streams: activeList
+      });
+    }
+
+    // 6. Transmissão de Reações em Tempo Real (SSE)
+    if (method === 'GET' && pathname.startsWith('/api/stream/') && pathname.endsWith('/reactions')) {
+      const parts = pathname.split('/');
+      const streamKey = parts[3];
+      res.writeHead(200, {
+        'Content-Type': 'text/event-stream',
+        'Cache-Control': 'no-cache',
+        'Connection': 'keep-alive',
+        'Access-Control-Allow-Origin': '*'
+      });
+      res.write(': connected\n\n');
+      if (!reactionSubscribers.has(streamKey)) {
+        reactionSubscribers.set(streamKey, new Set());
+      }
+      const set = reactionSubscribers.get(streamKey);
+      set.add(res);
+      req.on('close', () => {
+        set.delete(res);
+      });
+      return;
+    }
+
+    // 7. Envio de Reação Rápida
+    if (method === 'POST' && pathname.startsWith('/api/stream/') && pathname.endsWith('/react')) {
+      const parts = pathname.split('/');
+      const streamKey = parts[3];
+      let body = {};
+      try { body = await parseRequestBody(req); } catch (e) {}
+      const emoji = body.emoji || '🔥';
+      const subscribers = reactionSubscribers.get(streamKey);
+      if (subscribers && subscribers.size > 0) {
+        const payload = `data: ${JSON.stringify({ emoji, timestamp: Date.now() })}\n\n`;
+        for (const clientRes of subscribers) {
+          try { clientRes.write(payload); } catch (e) { subscribers.delete(clientRes); }
+        }
+      }
+      return sendJson(res, 200, { success: true, emoji });
+    }
+
+    // 8. Status de Stream
     if (method === 'GET' && pathname.startsWith('/api/stream/status/')) {
       const id = pathname.replace('/api/stream/status/', '').trim();
       const stream = streamStore.getStreamById(id) || streamStore.getStream(id);
@@ -225,7 +279,7 @@ function createServerInstance(options = {}) {
       });
     }
 
-    // 6. Visualizador Web (Player / Watch)
+    // 9. Visualizador Web (Player / Watch)
     if (method === 'GET' && (pathname.startsWith('/watch/') || pathname.startsWith('/live/'))) {
       const id = pathname.replace(/^\/(watch|live)\//, '').trim();
       const stream = streamStore.getStreamById(id) || streamStore.getStream(id);

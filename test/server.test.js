@@ -114,6 +114,25 @@ async function makeRequest(port, options, bodyData) {
     assert.strictEqual(streamStore.hasActiveStream('user_1'), false);
     console.log('   [OK] Stream encerrada com sucesso.');
 
+    // 6. Testando /api/streams/active
+    console.log('\n6. Testando GET /api/streams/active...');
+    const activeStreamsRes = await makeRequest(TEST_PORT, { path: '/api/streams/active', method: 'GET' });
+    assert.strictEqual(activeStreamsRes.statusCode, 200);
+    assert.strictEqual(Array.isArray(activeStreamsRes.json.streams), true);
+    console.log('   [OK] /api/streams/active respondeu 200 com lista.');
+
+    // 7. Testando reações
+    console.log('\n7. Testando POST /api/stream/:id/react...');
+    const reactRes = await makeRequest(TEST_PORT, {
+      path: '/api/stream/user_1/react',
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' }
+    }, { emoji: '🔥' });
+    assert.strictEqual(reactRes.statusCode, 200);
+    assert.strictEqual(reactRes.json.success, true);
+    assert.strictEqual(reactRes.json.emoji, '🔥');
+    console.log('   [OK] /api/stream/:id/react respondeu 200 com sucesso.');
+
     console.log('\n=======================================');
     console.log('  TODOS OS TESTES DO SERVIDOR PASSARAM! ');
     console.log('========================================\n');
