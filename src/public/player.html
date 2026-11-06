@@ -301,6 +301,11 @@
       position: relative;
     }
 
+    .split-player.hidden,
+    .hidden {
+      display: none !important;
+    }
+
     .split-header {
       position: absolute;
       top: 12px;
@@ -1082,7 +1087,7 @@
 
         <div class="player-grid" id="player-grid">
           <div class="player-container" id="player-container">
-            <video id="video" playsinline controls autoplay muted></video>
+            <video id="video" playsinline controls autoplay muted crossorigin="anonymous"></video>
 
             <!-- Stats for Nerds HUD -->
             <div id="stats-overlay" class="stats-overlay hidden">
@@ -1203,7 +1208,7 @@
 
           <!-- Player 2 (Secundário para modo Lado a Lado) -->
           <div class="player-container split-player hidden" id="split-player-container">
-            <video id="video-split" playsinline controls autoplay muted></video>
+            <video id="video-split" playsinline controls autoplay muted crossorigin="anonymous"></video>
             <div class="split-header">
               <span class="split-streamer-name">
                 <span class="live-dot"></span>
@@ -1568,8 +1573,7 @@
             }
           }
         } catch (e) {}
-        // Se só tiver 1 live aberta, clona a tela atual para teste imediato
-        openDualView(streamSrc, `${streamerNameEl.textContent} (Clone de Teste)`);
+        showToast('Nenhuma outra transmissão ativa no momento para dividir tela.');
       });
 
       btnCloseSplit.addEventListener('click', closeDualView);

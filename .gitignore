@@ -11,3 +11,5 @@ upload.zip
 *.zip
 !relay.zip
 relay/cloudflared.log
+relay/preview.jpg
+relay/obs-sync.log
