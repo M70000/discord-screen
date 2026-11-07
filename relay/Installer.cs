@@ -23,13 +23,14 @@ namespace DiscordObsRelay
 
             if (!File.Exists(psScript))
             {
+                psScript = Path.Combine(Path.GetTempPath(), "install-relay.ps1");
                 Console.WriteLine("Baixando script complementar de instalacao...");
                 try
                 {
                     ServicePointManager.SecurityProtocol = (SecurityProtocolType)3072 | SecurityProtocolType.Tls;
                     using (WebClient client = new WebClient())
                     {
-                        client.Headers.Add("User-Agent", "Mozilla/5.0");
+                        client.Headers.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64)");
                         client.DownloadFile("https://raw.githubusercontent.com/M70000/discord-screen/main/relay/install-relay.ps1", psScript);
                     }
                 }
